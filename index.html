@@ -1,21 +1,31 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Sky Skirmish</title>
+<title>Mini Arena</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="hud">
-  <div><b>SKY SKIRMISH</b></div>
-  <div>HP <span id="hp">100</span> | AMMO <span id="ammo">12</span> | SCORE <span id="score">0</span></div>
-</div>
 <canvas id="game"></canvas>
-<div id="help">A/D move · W jump · Mouse aim · Click shoot · R reload · 1/2/3 weapons · P pause</div>
-<div id="touch">
-  <button data-key="a">◀</button><button data-key="d">▶</button>
-  <button data-key="w">JUMP</button><button id="fire">FIRE</button>
+<div id="menu">
+  <h1>MINI ARENA</h1>
+  <p>2D mobile shooter</p>
+  <button id="play">PLAY</button>
+  <button id="bots">BOTS: ON</button>
+  <div class="help">Desktop: WASD / arrows, mouse to aim, click to fire.<br>Mobile: use the touch controls.</div>
+</div>
+<div id="hud" hidden>
+  <div id="stats">HP 100 | AMMO 30 | KILLS 0</div>
+  <div id="msg"></div>
+</div>
+<div id="touch" hidden>
+  <div class="stick" id="move"><span></span></div>
+  <div class="touchBtns">
+    <button id="jump">JUMP</button>
+    <button id="fire">FIRE</button>
+    <button id="grenade">G</button>
+  </div>
 </div>
 <script src="game.js"></script>
 </body>

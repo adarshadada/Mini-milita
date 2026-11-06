@@ -1,57 +1,103 @@
-const c=document.getElementById('game'),ctx=c.getContext('2d');
-let W,H,dpr=1,keys={},mouse={x:0,y:0,down:false},paused=false;
-const gravity=.55, world={w:2600,h:1200};
-let score=0, camera={x:0,y:0};
-const player={x:300,y:700,w:34,h:48,vx:0,vy:0,hp:100,ammo:12,weapon:0,cool:0,ground:false,respawn:0};
-const weapons=[
- {name:'Pistol',damage:18,rate:18,speed:12,mag:12},
- {name:'SMG',damage:9,rate:5,speed:14,mag:30},
- {name:'Blaster',damage:40,rate:30,speed:10,mag:5}
-];
-let bots=[
- {x:900,y:500,w:34,h:46,vx:0,vy:0,hp:60,ground:false,dir:-1,cool:50},
- {x:1500,y:350,w:34,h:46,vx:0,vy:0,hp:60,ground:false,dir:1,cool:80},
- {x:2050,y:700,w:34,h:46,vx:0,vy:0,hp:60,ground:false,dir:-1,cool:60}
-];
-let bullets=[],particles=[],pickups=[
- {x:700,y:500,type:'ammo'},{x:1250,y:700,type:'heal'},{x:1800,y:400,type:'ammo'}
-];
-const platforms=[
-{x:0,y:1050,w:2600,h:150},{x:150,y:850,w:430,h:30},{x:760,y:720,w:360,h:30},
-{x:1300,y:850,w:420,h:30},{x:1850,y:650,w:500,h:30},{x:500,y:560,w:300,h:25},
-{x:1100,y:470,w:350,h:25},{x:1650,y:430,w:330,h:25},{x:2150,y:300,w:300,h:25}
-];
-function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
-addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='p')paused=!paused;if(e.key.toLowerCase()==='r')player.ammo=weapons[player.weapon].mag; if(['1','2','3'].includes(e.key))player.weapon=+e.key-1});
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});addEventListener('mousedown',()=>mouse.down=true);addEventListener('mouseup',()=>mouse.down=false);
-function bindTouch(){document.querySelectorAll('#touch button[data-key]').forEach(b=>{let k=b.dataset.key;b.onpointerdown=e=>{e.preventDefault();keys[k]=true};b.onpointerup=b.onpointercancel=()=>keys[k]=false});let f=document.getElementById('fire');f.onpointerdown=()=>mouse.down=true;f.onpointerup=f.onpointercancel=()=>mouse.down=false}bindTouch();
+const c=document.getElementById("game"),ctx=c.getContext("2d");
+let W,H,scale=1,playing=false,botsOn=true,last=0,keys={},mouse={x:0,y:0,down:false},kills=0;
+const world={w:2200,h:900},cam={x:0,y:0};
+let player,bullets=[],enemies=[],particles=[],platforms=[],grenades=[];
+const touch={x:0,y:0,active:false,fire:false};
+
+function resize(){W=c.width=innerWidth;H=c.height=innerHeight;scale=Math.min(W/1100,H/600);if(!playing)drawMenuBg()}
+addEventListener("resize",resize);resize();
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=1;if(e.key===" "||e.key.toLowerCase()==="w")e.preventDefault()});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=0);
+c.addEventListener("mousemove",e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+c.addEventListener("mousedown",()=>mouse.down=true);addEventListener("mouseup",()=>mouse.down=false);
+
+const $=id=>document.getElementById(id);
+$("play").onclick=start;
+$("bots").onclick=()=>{botsOn=!botsOn;$("bots").textContent="BOTS: "+(botsOn?"ON":"OFF")};
+
+function start(){
+ $("menu").style.display="none";$("hud").hidden=false;$("touch").hidden=false;playing=true;kills=0;
+ platforms=[
+  {x:0,y:820,w:2200,h:80},{x:220,y:650,w:300,h:25},{x:760,y:540,w:280,h:25},
+  {x:1250,y:650,w:330,h:25},{x:1740,y:500,w:300,h:25},{x:520,y:390,w:240,h:25},
+  {x:1020,y:320,w:260,h:25},{x:1510,y:350,w:180,h:25}
+ ];
+ player={x:180,y:700,vx:0,vy:0,w:34,h:50,hp:100,ammo:30,cool:0,ground:false,dir:1,grenades:3,respawn:0};
+ enemies=[];bullets=[];particles=[];grenades=[];
+ if(botsOn)for(let i=0;i<5;i++)spawnBot(500+i*300,700);
+ requestAnimationFrame(loop);
+}
+
+function spawnBot(x,y){enemies.push({x,y,vx:0,vy:0,w:34,h:50,hp:100,cool:Math.random()*1.5,dir:-1,ground:false})}
 function rectHit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
-function collide(o){o.ground=false;for(const p of platforms){if(rectHit(o,p)&&o.vy>=0&&o.y+o.h-o.vy<=p.y+5){o.y=p.y-o.h;o.vy=0;o.ground=true}}if(o.y>world.h){o.y=0;o.vy=0}}
-function shoot(x,y,tx,ty,owner){let w=weapons[owner.weapon];if(owner.ammo<=0)return;owner.ammo--;let a=Math.atan2(ty-y,tx-x);bullets.push({x,y,vx:Math.cos(a)*w.speed,vy:Math.sin(a)*w.speed,damage:w.damage,life:100,team:owner===player?'p':'b'});}
-function particle(x,y){particles.push({x,y,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,life:20})}
-function respawn(){player.x=300;player.y=700;player.hp=100;player.ammo=weapons[player.weapon].mag}
-function update(){
-if(paused)return;
-player.vx=(keys.a?-3.8:0)+(keys.d?3.8:0);if(keys.w&&player.ground){player.vy=-11;keys.w=false}player.vy+=gravity;player.x+=player.vx;player.y+=player.vy;collide(player);player.x=Math.max(0,Math.min(world.w-player.w,player.x));
-if(player.cool>0)player.cool--;let w=weapons[player.weapon];if(mouse.down&&player.cool<=0){shoot(player.x+17,player.y+22,mouse.x+camera.x,mouse.y+camera.y,player);player.cool=w.rate}
-for(const b of bots){b.vy+=gravity;b.x+=b.dir*1.1;b.y+=b.vy;collide(b);if(b.x<100||b.x>world.w-100)b.dir*=-1;if(--b.cool<=0){b.cool=70+Math.random()*70;shoot(b.x+17,b.y+20,player.x,player.y,b)}}
-for(const q of bullets){q.x+=q.vx;q.y+=q.vy;q.life--;for(const b of bots)if(q.team==='p'&&rectHit({x:q.x-3,y:q.y-3,w:6,h:6},b)){b.hp-=q.damage;q.life=0;for(let i=0;i<4;i++)particle(q.x,q.y);if(b.hp<=0){score+=100;b.x=1800+Math.random()*400;b.y=250;b.hp=60}}if(q.team==='b'&&rectHit({x:q.x-3,y:q.y-3,w:6,h:6},player)){player.hp-=q.damage;q.life=0;if(player.hp<=0){score=Math.max(0,score-25);respawn()}}}bullets=bullets.filter(q=>q.life>0&&q.x>-50&&q.x<world.w+50&&q.y>-50&&q.y<world.h+50);
-for(const p of pickups){if(Math.hypot(player.x-p.x,player.y-p.y)<45){if(p.type==='heal')player.hp=Math.min(100,player.hp+30);else player.ammo=weapons[player.weapon].mag;p.x=300+Math.random()*2100;p.y=250+Math.random()*600}}
-for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.life--}particles=particles.filter(p=>p.life>0);
-camera.x=Math.max(0,Math.min(world.w-W,player.x-W/2));camera.y=Math.max(0,Math.min(world.h-H,player.y-H/2))
+function gravity(o,dt){
+ o.vy+=1200*dt;o.x+=o.vx*dt;o.y+=o.vy*dt;o.ground=false;
+ for(const p of platforms)if(rectHit(o,p)&&o.vy>=0&&o.y+o.h-o.vy*dt<=p.y+5){o.y=p.y-o.h;o.vy=0;o.ground=true}
+ o.x=Math.max(0,Math.min(world.w-o.w,o.x));
+}
+function aim(){
+ const wx=mouse.x/scale+cam.x,wy=mouse.y/scale+cam.y;
+ return Math.atan2(wy-(player.y+20),wx-(player.x+17));
+}
+function shoot(o,a,owner){
+ const speed=900;bullets.push({x:o.x+o.w/2,y:o.y+20,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:4,owner});
+}
+function update(dt){
+ if(player.respawn>0){player.respawn-=dt;if(player.respawn<=0){player.x=180;player.y=700;player.hp=100;player.ammo=30}return}
+ let dx=(keys.a||keys.arrowleft?-1:0)+(keys.d||keys.arrowright?1:0);
+ if(touch.active)dx=touch.x;
+ player.vx=dx*300;
+ if((keys.w||keys.arrowup||keys[" "]||touch.jump)&&player.ground){player.vy=-520;keys[" "]=0;touch.jump=false}
+ player.dir=Math.cos(aim())>=0?1:-1;
+ player.cool-=dt;
+ if((mouse.down||touch.fire)&&player.cool<=0&&player.ammo>0){shoot(player,aim(),"p");player.ammo--;player.cool=.11}
+ if((keys.g||touch.grenade)&&player.grenades>0){grenades.push({x:player.x+17,y:player.y+20,vx:player.dir*500,vy:-400,t:1.2,owner:"p"});player.grenades--;keys.g=0;touch.grenade=false}
+ gravity(player,dt);
+ for(const e of enemies){
+  const d=player.x-e.x;
+  e.vx=Math.sign(d)*120;e.dir=Math.sign(d)||1;e.cool-=dt;
+  if(Math.abs(d)<700&&e.cool<=0){shoot(e,Math.atan2(player.y-e.y,d),e);e.cool=1.0+Math.random()*.7}
+  gravity(e,dt);
+ }
+ for(let i=bullets.length-1;i>=0;i--){
+  const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
+  if(b.x<0||b.x>world.w||b.y<0||b.y>world.h){bullets.splice(i,1);continue}
+  let hit=false;
+  if(b.owner==="p")for(const e of enemies)if(rectHit({x:b.x-2,y:b.y-2,w:4,h:4},e)){e.hp-=34;hit=true;if(e.hp<=0){kills++;spawnBot(1900+Math.random()*200,700)}break}
+  else if(rectHit({x:b.x-2,y:b.y-2,w:4,h:4},player)){player.hp-=15;hit=true;if(player.hp<=0){player.respawn=2}}
+  if(hit)bullets.splice(i,1);
+ }
+ for(let i=grenades.length-1;i>=0;i--){let g=grenades[i];g.vy+=900*dt;g.x+=g.vx*dt;g.y+=g.vy*dt;g.t-=dt;
+  if(g.y+8>820){g.y=812;g.vy*=-.35;g.vx*=.7}
+  if(g.t<=0){for(const e of enemies)if(Math.hypot(e.x-g.x,e.y-g.y)<150)e.hp-=80;if(Math.hypot(player.x-g.x,player.y-g.y)<90)player.hp-=20;grenades.splice(i,1)}
+ }
+ for(let i=enemies.length-1;i>=0;i--)if(enemies[i].hp<=0)enemies.splice(i,1);
+ cam.x=Math.max(0,Math.min(world.w-W/scale,player.x-W/scale/2));
+ cam.y=Math.max(0,Math.min(world.h-H/scale,player.y-H/scale/2));
+ $("stats").textContent=`HP ${Math.max(0,player.hp)} | AMMO ${player.ammo} | GRENADES ${player.grenades} | KILLS ${kills}`;
+ $("msg").textContent=player.respawn>0?"RESPAWNING...":"";
 }
 function draw(){
-ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(-camera.x,-camera.y);
-for(let x=0;x<world.w;x+=100)for(let y=0;y<world.h;y+=100){ctx.fillStyle=((x/100+y/100)%2?'#172b3e':'#15273a');ctx.fillRect(x,y,100,100)}
-for(const p of platforms){ctx.fillStyle='#42596c';ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#6c8ba0';ctx.fillRect(p.x,p.y,p.w,5)}
-for(const q of pickups){ctx.fillStyle=q.type==='heal'?'#42d66b':'#ffd34e';ctx.beginPath();ctx.arc(q.x,q.y,13,0,Math.PI*2);ctx.fill()}
-drawChar(player,'#42a5ff');for(const b of bots)drawChar(b,'#ff5d67');
-ctx.fillStyle='#ffe27a';for(const q of bullets){ctx.beginPath();ctx.arc(q.x,q.y,4,0,Math.PI*2);ctx.fill()}
-for(const p of particles){ctx.globalAlpha=p.life/20;ctx.fillStyle='#fff';ctx.fillRect(p.x,p.y,3,3);ctx.globalAlpha=1}
-ctx.restore();
-document.getElementById('hp').textContent=Math.max(0,Math.round(player.hp));document.getElementById('ammo').textContent=player.ammo;document.getElementById('score').textContent=score;
-if(paused){ctx.fillStyle='#0008';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='32px Arial';ctx.textAlign='center';ctx.fillText('PAUSED',W/2,H/2)}
+ ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,W/scale,H/scale);
+ ctx.fillStyle="#151a20";ctx.fillRect(0,0,W/scale,H/scale);
+ ctx.save();ctx.translate(-cam.x,-cam.y);
+ for(const p of platforms){ctx.fillStyle="#38434c";ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle="#69757d";ctx.fillRect(p.x,p.y,p.w,5)}
+ drawActor(player,true);for(const e of enemies)drawActor(e,false);
+ ctx.fillStyle="#ffd34d";for(const b of bullets)ctx.beginPath(),ctx.arc(b.x,b.y,b.r,0,Math.PI*2),ctx.fill();
+ for(const g of grenades){ctx.fillStyle="#777";ctx.beginPath();ctx.arc(g.x,g.y,9,0,Math.PI*2);ctx.fill()}
+ ctx.restore();
 }
-function drawChar(o,color){ctx.fillStyle=color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#f3c7a6';ctx.beginPath();ctx.arc(o.x+17,o.y+12,10,0,Math.PI*2);ctx.fill();ctx.fillStyle='#202a34';ctx.fillRect(o.x+8,o.y+25,18,4)}
-function loop(){update();draw();requestAnimationFrame(loop)}loop();
+function drawActor(o,me){
+ ctx.fillStyle=me?"#35b8ff":"#ef5350";ctx.fillRect(o.x,o.y,o.w,o.h);
+ ctx.fillStyle="#f1c27d";ctx.beginPath();ctx.arc(o.x+17,o.y+12,12,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#222";ctx.fillRect(o.x+(o.dir>0?24:-8),o.y+20,18,5);
+ ctx.fillStyle="#222";ctx.fillRect(o.x+6,o.y+35,7,15);ctx.fillRect(o.x+21,o.y+35,7,15);
+ ctx.fillStyle="#111";ctx.fillRect(o.x,o.y-10,o.w,4);ctx.fillStyle="#4caf50";ctx.fillRect(o.x,o.y-10,o.w*Math.max(0,o.hp)/100,4);
+}
+function loop(t){if(!playing)return;let dt=Math.min(.033,(t-last)/1000||0);last=t;update(dt);draw();requestAnimationFrame(loop)}
+function drawMenuBg(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle="#111";ctx.fillRect(0,0,W,H)}
+$("jump").ontouchstart=e=>{e.preventDefault();touch.jump=true};
+$("fire").ontouchstart=e=>{e.preventDefault();touch.fire=true};$("fire").ontouchend=()=>touch.fire=false;
+$("grenade").ontouchstart=e=>{e.preventDefault();touch.grenade=true};
+$("move").ontouchmove=e=>{const r=e.currentTarget.getBoundingClientRect(),t=e.touches[0];touch.active=true;touch.x=Math.max(-1,Math.min(1,(t.clientX-(r.left+r.width/2))/(r.width/2)))};
+$("move").ontouchend=()=>{touch.active=false;touch.x=0};
