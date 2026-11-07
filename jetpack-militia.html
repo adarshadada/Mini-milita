@@ -6,7 +6,7 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#141b0e;color:#f1ead0;font-family:"Trebuchet MS",system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
-canvas{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;touch-action:none;cursor:none;display:block}
+#c{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;touch-action:none;cursor:none;display:block}
 #auth,#adm,#menu,#end,#upg{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at top,#2c3d20,#141b0e 70%);z-index:4;padding:max(12px,env(safe-area-inset-top)) 12px;overflow:auto}
 .card{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;width:100%;max-width:880px;background:#1d2616;border:1px solid #4a5a36;border-radius:12px;padding:28px}
 .card.one{grid-template-columns:1fr;max-width:420px;text-align:center}
@@ -37,7 +37,7 @@ input:focus,select:focus{outline:2px solid #ff9a2e;outline-offset:1px}
 #touch{display:none;position:fixed;right:calc(14px + env(safe-area-inset-right,0px));top:36%;z-index:3;flex-direction:column;gap:10px}
 #touch button{width:76px;height:42px;border-radius:8px;border:1px solid #d8c88a;background:#1d2616cc;color:#fff;font:inherit;font-size:13px;font-weight:700;touch-action:none}
 #touch button:active{background:#ff9a2e;color:#141b0e}
-@media (pointer:coarse){#touch{display:flex}canvas{cursor:default}}
+@media (pointer:coarse){#touch{display:flex}#c{cursor:default}}
 @media (max-width:700px),(max-height:430px){.card{grid-template-columns:1fr 1fr;gap:16px;padding:16px}.lead{font-size:.9rem}.help{font-size:.75rem}h1{font-size:1.7rem}.form{gap:8px}input,select{padding:5px 8px}}
 @media (max-width:520px) and (orientation:portrait){.card{grid-template-columns:1fr}}
 #rot{display:none;position:fixed;inset:0;z-index:9;background:#141b0e;place-items:center;text-align:center;font-size:1.4rem;padding:20px}
@@ -72,6 +72,12 @@ h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
 .sw .knob{width:34px;height:18px;border-radius:9px;background:#3a4a2a;position:relative;transition:background .15s}
 .sw .knob::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
 .sw input:checked+.knob{background:#2fb4e0}.sw input:checked+.knob::after{left:18px}
+
+#shopTabs{grid-template-columns:repeat(3,1fr)}
+.av{align-self:center}
+.card.wide>*{flex-shrink:0}
+
+canvas.av{width:64px;height:96px}
 
 #err{position:fixed;left:0;right:0;bottom:0;z-index:99;background:#a22;color:#fff;font:12px monospace;padding:6px 10px}
 </style></head>
@@ -110,15 +116,16 @@ h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
 <p class="note">Friends who enter the same room code and game mode play together. Free for all goes to 15 kills, team games to 20 team kills.</p>
 </div>
 <button id="play">Deploy</button>
-<button id="upBtn" class="ghost">Upgrades</button>
+<button id="upBtn" class="ghost">Shop</button>
 <p id="msg" role="status"></p>
 <button id="admBtn" class="ghost" hidden>Admin panel</button>
 <button id="outBtn" class="ghost">Sign in</button>
 <button id="fsBtn" class="ghost">Toggle fullscreen</button>
 </div></div></section>
-<section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Upgrades</button></div></section>
-<section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Upgrades</h1><div class="credits"><span id="cr">0</span> credits</div></div>
-<p class="note">Earn credits from kills and by finishing matches. Upgrades are saved on this device and apply in every mode.</p>
+<section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Shop</button></div></section>
+<section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Shop</h1><div class="credits"><span id="cr">0</span> credits</div></div>
+<p class="note">Earn credits from kills and by finishing matches. Purchases are saved to your account (or to this device if you play as a guest).</p>
+<div class="tabs" id="shopTabs"><button data-t="up" class="on">Upgrades</button><button data-t="gun">Guns</button><button data-t="av">Avatars</button></div>
 <div class="rrow"><input id="codeIn" placeholder="Enter a code" maxlength="20" autocomplete="off"><button id="redeem" class="pri">Redeem</button></div>
 <p id="umsg" class="note"></p><div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
 <section id="adm" hidden><div class="card wide"><div class="uhead"><h1>Admin panel</h1><div class="credits">Unlimited credits</div></div>
@@ -155,7 +162,7 @@ shotgun:{n:'Shotgun',ab:'SG',dmg:9,rate:42,mag:6,spd:13,spread:.16,rl:100,pel:7,
 sniper:{n:'Sniper',ab:'SN',dmg:75,rate:75,mag:5,spd:32,spread:0,rl:120,pel:1,life:70,kick:3,len:34},
 rocket:{n:'Rocket launcher',ab:'RL',dmg:0,rate:70,mag:2,spd:9,spread:0,rl:120,pel:1,life:200,kick:2.5,len:28,rocket:1}};
 const D={easy:{aim:.05,jit:.12},normal:{aim:.09,jit:.06},hard:{aim:.16,jit:.025}};
-const TYPES=['ak','shotgun','sniper','rocket','med','gren','ak','med'],rk=s=>TYPES[(Math.imul((s|0)+1,2654435761)>>>8)%TYPES.length];
+const TYPES=['med','gren','med'],rk=s=>TYPES[(Math.imul((s|0)+1,2654435761)>>>8)%TYPES.length];
 let PL=[],B=[],G=[],P=[],EX=[],KF=[],PK=[],me=null,state='menu',T=0,TARGET=15,DIFF=D.normal,sh=0,flash=0,hm=0;
 const cam={x:0,y:0};let online=false,user=null,god=false,godPref=false,TEAMS=false,outShots=[],dropN=0;const TC=['#2f6fe0','#d9382c'],TN=['Blue','Red'];const addKF=m=>{KF.unshift({t:m,ttl:300});KF.length=Math.min(KF.length,4)};
 // ---- sound
@@ -165,10 +172,10 @@ const near=o=>!me||Math.abs(o.x-me.x)<800;
 // ---- entities
 const ov=(a,p)=>a.x<p[0]+p[2]&&a.x+a.w>p[0]&&a.y<p[1]+p[3]&&a.y+a.h>p[1];
 const gun=k=>({k,ammo:WP[k].mag,res:WP[k].mag*3}),cw=o=>o.wp[o.cur];
-function mk(name,bot,col){return{name,bot,col,x:0,y:0,vx:0,vy:0,w:18,h:34,hp:100,fuel:100,wp:[gun('pistol')],cur:0,aim:0,dir:1,cd:0,rl:0,gren:3,mh:100,mf:100,g0:3,spd:1,rlm:1,dm:1,team:-1,kills:0,deaths:0,dead:0,rs:0,inv:0,on:0,fl:0,wk:0,jf:0,c:{mx:0,up:0,aim:0,fire:0},ai:{t:0,dir:1,low:0}}}
+function mk(name,bot,col){return{name,bot,col,x:0,y:0,vx:0,vy:0,w:18,h:34,hp:100,fuel:100,wp:[gun('pistol')],cur:0,aim:0,dir:1,cd:0,rl:0,gren:3,mh:100,mf:100,g0:3,spd:1,rlm:1,dm:1,team:-1,lo:'',av:0,kills:0,deaths:0,dead:0,rs:0,inv:0,on:0,fl:0,wk:0,jf:0,c:{mx:0,up:0,aim:0,fire:0},ai:{t:0,dir:1,low:0}}}
 function spawn(o){let best=null,bd=-1;for(let i=0;i<6;i++){const p=MAP[rnd()*MAP.length|0];if(p[2]<150)continue;const x=p[0]+20+rnd()*(p[2]-60),y=p[1]-40;let d=1e9;
 for(const q of PL)if(q!==o&&!q.dead)d=Math.min(d,Math.hypot(q.x-x,q.y-y));if(d>bd){bd=d;best=[x,y]}}
-if(!best)best=[100,1000];Object.assign(o,{x:best[0],y:best[1],vx:0,vy:0,hp:o.mh,fuel:o.mf,dead:0,inv:120,cur:0,rl:0,gren:o.g0,wp:[gun('pistol')]})}
+if(!best)best=[100,1000];Object.assign(o,{x:best[0],y:best[1],vx:0,vy:0,hp:o.mh,fuel:o.mf,dead:0,inv:120,cur:o.lo?1:0,rl:0,gren:o.g0,wp:o.lo?[gun('pistol'),gun(o.lo)]:[gun('pistol')]})}
 function move(o){o.vy=Math.min(o.vy+.45,14);o.x+=o.vx;for(const p of MAP)if(ov(o,p)){o.x=o.vx>0?p[0]-o.w:p[0]+p[2];o.vx=0}
 o.on=0;o.y+=o.vy;for(const p of MAP)if(ov(o,p)){if(o.vy>0){o.y=p[1]-o.h;o.on=1}else o.y=p[1]+p[3];o.vy=0}
 o.x=clamp(o.x,0,WW-o.w);if(o.y<0){o.y=0;o.vy=Math.max(o.vy,0)}}
@@ -189,7 +196,7 @@ if(w.ammo<=0)reload(o)}
 function hit(q,d,by,kx=0){if(by===me&&q!==me)hm=10;if(q.remote||q.dead||q.inv>0||(q===me&&god))return;q.hp-=d;q.vx+=kx;if(q===me)flash=14;if(q.hp<=0)die(q,by)}
 function die(q,by){q.dead=1;q.rs=q===me?180:150;q.deaths++;const k=by&&by!==q;if(k&&!by.remote)by.kills++;const msg=k?by.name+' killed '+q.name:q.name+' fell';addKF(msg);if(online&&q===me)send({t:'d',m:msg,kid:k?by.id:null});
 pt(q.x+9,q.y+17,40,'#b00',9,40,.25);pt(q.x+9,q.y+17,14,q.col,7,40,.25);snd(120,.3,'sawtooth',.06,30);
-const w=cw(q);if(w.k!=='pistol'){const dp={x:q.x,y:q.y+14,w:20,h:16,vx:0,vy:0,k:w.k,t:0,on:0,drop:1,ttl:900,id:'d'+(++dropN)+(q.id||'')};PK.push(dp);if(online&&q===me)send({t:'p',x:dp.x,y:dp.y,k:dp.k,id:dp.id})}
+
 if(k)checkWin()}
 function boom(x,y,r,d,by){for(const q of PL){if(q.dead||q.remote||(TEAMS&&q!==by&&q.team===by.team))continue;const cx=q.x+9,cy=q.y+17,dist=Math.hypot(cx-x,cy-y);
 if(dist<r){const f=1-dist/r,ux=(cx-x)/(dist||1),uy=(cy-y)/(dist||1);hit(q,d*f,by,ux*f*9);q.vy+=uy*f*9-2*f}}
@@ -214,7 +221,7 @@ if(dy<-40&&o.fuel>8)c.up=1;if(Math.abs(o.vx)<.4&&c.mx&&o.fuel>5)c.up=1;
 if(o.fuel<10)a.low=1;if(o.fuel>50)a.low=0;if(a.low)c.up=0;
 if(see&&bd>150&&bd<400&&rnd()<.004)gren(o);
 if(cw(o).k==='pistol'&&o.wp.length>1&&rnd()<.02)swap(o);
-const need=o.hp<45?p=>p.k==='med':o.wp.length<2?p=>p.k!=='med'&&p.k!=='gren':null;
+const need=o.hp<45?p=>p.k==='med':null;
 if(need){let m=null,md=900;for(const p of PK)if(!p.t&&need(p)){const d=Math.abs(p.x-o.x)+Math.abs(p.y-o.y);if(d<md){md=d;m=p}}
 if(m){c.mx=Math.sign(m.x-o.x);if(m.y<o.y-20&&o.fuel>8)c.up=1}}}
 function take(q,p){if(p.k==='med'){if(q.hp>=q.mh)return 0;q.hp=Math.min(q.mh,q.hp+50);return 1}
@@ -270,10 +277,9 @@ if(o===me?god:o.god){g.strokeStyle='rgba(120,220,255,'+(.55+.3*Math.sin(T*.15))+
 g.fillStyle='#555';g.fillRect(d>0?-13:7,8,6,15);
 if(o.jf){g.fillStyle='#ff9a2e';const fx=d>0?-10:10,fl=9+rnd()*8;g.beginPath();g.moveTo(fx-3,23);g.lineTo(fx+3,23);g.lineTo(fx,23+fl);g.fill()}
 g.strokeStyle='#222';g.lineWidth=4;g.beginPath();g.moveTo(-3,24);g.lineTo(-3+sw,34);g.moveTo(3,24);g.lineTo(3-sw,34);g.stroke();
-g.fillStyle=o.col;g.fillRect(-7,8,14,17);g.fillStyle='#f1c27d';g.beginPath();g.arc(0,5,6,0,7);g.fill();
-g.fillStyle='#3d4a2e';g.beginPath();g.arc(0,4,6.8,Math.PI,0);g.fill();g.fillStyle='#000';g.fillRect(d*2.5,4,2,2);
+const av=AV[o.av|0]||AV[0];g.fillStyle=TEAMS?o.col:av.b;g.fillRect(-7,8,14,17);headGfx(g,av,d);
 g.translate(0,14);g.rotate(o.aim);if(d<0)g.scale(1,-1);
-g.fillStyle='#222';g.fillRect(2,-3,L,5);g.fillStyle='#444';g.fillRect(2,-3,L*.4,8);g.strokeStyle='#f1c27d';g.lineWidth=3;g.beginPath();g.moveTo(0,0);g.lineTo(9,0);g.stroke();
+g.fillStyle='#222';g.fillRect(2,-3,L,5);g.fillStyle='#444';g.fillRect(2,-3,L*.4,8);g.strokeStyle=av.s;g.lineWidth=3;g.beginPath();g.moveTo(0,0);g.lineTo(9,0);g.stroke();
 if(o.fl>0){g.fillStyle='#ffe27a';g.beginPath();g.arc(L+6,0,5,0,7);g.fill()}
 g.restore();
 if(o!==me){g.fillStyle='#0008';g.fillRect(o.x-2,o.y-9,22,4);g.fillStyle=o.col;g.fillRect(o.x-1,o.y-8,20*Math.max(0,o.hp)/100,2);g.fillStyle=TEAMS?TC[o.team]:'#fff';g.font='bold 10px sans-serif';g.textAlign='center';g.fillText(o.name,o.x+9,o.y-13)}}
@@ -310,7 +316,7 @@ g.strokeStyle='#ffffff77';g.lineWidth=3;g.beginPath();g.arc(t.ox,t.oy,50,0,7);g.
 // ---- network (Supabase Realtime broadcast, publishable key only)
 const myId=Math.random().toString(36).slice(2,10);let sb=null,ch=null,roomCode='lobby';
 const send=p=>{if(ch)try{ch.send({type:'broadcast',event:'e',payload:p})}catch(e){}};
-function sendState(){const c=cw(me),f=(v,n)=>+v.toFixed(n);send({t:'s',id:myId,n:me.name,c:me.col,x:f(me.x,1),y:f(me.y,1),vx:f(me.vx,2),vy:f(me.vy,2),a:f(me.aim,3),h:Math.round(me.hp/me.mh*100),tm:me.team,gd:god?1:0,d:me.dead,k:me.kills,dd:me.deaths,w:c.k,jf:me.jf,on:me.on,inv:me.inv>0?1:0,sh:outShots.length?outShots:undefined});outShots=[]}
+function sendState(){const c=cw(me),f=(v,n)=>+v.toFixed(n);send({t:'s',id:myId,n:me.name,c:me.col,x:f(me.x,1),y:f(me.y,1),vx:f(me.vx,2),vy:f(me.vy,2),a:f(me.aim,3),h:Math.round(me.hp/me.mh*100),tm:me.team,gd:god?1:0,av:me.av,d:me.dead,k:me.kills,dd:me.deaths,w:c.k,jf:me.jf,on:me.on,inv:me.inv>0?1:0,sh:outShots.length?outShots:undefined});outShots=[]}
 function mkRemote(id,n,c){const o=mk(n,0,c);o.remote=1;o.id=id;o.seen=performance.now();o.dead=1;o.tx=0;o.ty=0;return o}
 function remoteStep(o){o.fl>0&&o.fl--;if(o.dead)return;if(performance.now()-o.seen>250){o.vx=0;o.vy=0}
 o.tx+=o.vx;o.ty+=o.vy;o.x+=(o.tx-o.x)*.3;o.y+=(o.ty-o.y)*.3;if(Math.abs(o.tx-o.x)>250){o.x=o.tx;o.y=o.ty}
@@ -320,7 +326,7 @@ if(p.t==='s'){if(p.id===myId)return;let o=PL.find(q=>q.id===p.id);
 if(!o){o=mkRemote(p.id,p.n,p.c);o.x=o.tx=p.x;o.y=o.ty=p.y;PL.push(o);addKF(p.n+' joined')}
 if(p.d&&!o.dead){pt(o.x+9,o.y+17,40,'#b00',9,40,.25);pt(o.x+9,o.y+17,14,o.col,7,40,.25)}
 if(o.dead&&!p.d){o.x=p.x;o.y=p.y}
-Object.assign(o,{god:!!p.gd,name:p.n,team:p.tm==null?-1:p.tm,col:TEAMS&&p.tm>=0?TC[p.tm]:p.c,tx:p.x,ty:p.y,vx:p.vx,vy:p.vy,aim:p.a,hp:p.h,dead:p.d,kills:p.k,deaths:p.dd,jf:p.jf,on:p.on,inv:p.inv?9999:0,wp:[{k:p.w,ammo:0,res:0}],cur:0,seen:performance.now()});
+Object.assign(o,{god:!!p.gd,av:p.av|0,name:p.n,team:p.tm==null?-1:p.tm,col:TEAMS&&p.tm>=0?TC[p.tm]:p.c,tx:p.x,ty:p.y,vx:p.vx,vy:p.vy,aim:p.a,hp:p.h,dead:p.d,kills:p.k,deaths:p.dd,jf:p.jf,on:p.on,inv:p.inv?9999:0,wp:[{k:p.w,ammo:0,res:0}],cur:0,seen:performance.now()});
 o.dir=Math.cos(o.aim)<0?-1:1;if(p.sh)for(const q of p.sh){fireBullets(o,q[0],q[1]+9,q[2]+13,q[3],Math.min(1.5,q[4]||1));o.fl=4}}
 else if(p.t==='d'){addKF(p.m);if(p.kid===myId)me.kills++}
 else if(p.t==='k'){const k=PK.find(x=>x.id===p.id);if(k&&!k.t&&!k.gone){if(k.drop)k.gone=1;else k.t=800}}
@@ -342,8 +348,9 @@ online=isOnline;TEAMS=$('gm').value==='tdm';TARGET=isOnline?(TEAMS?20:15):+$('kt
 const L=UP.lv,mt=TEAMS?(isOnline?+$('tm').value:0):-1;
 PL=[me=mk(name,0,TEAMS?TC[mt]:isOnline?COLS[parseInt(myId,36)%COLS.length]:'#2f6fe0')];
 Object.assign(me,{team:mt,mh:100+15*L.hp,mf:100+15*L.fuel,spd:1+.06*L.spd,dm:1+.06*L.dmg,rlm:1-.1*L.rl,g0:3+L.gren});
+const gk=owns('guns',INV.gun)?INV.gun:'';Object.assign(me,{lo:gk,av:Math.max(0,AV.findIndex(a=>a.id===INV.avatar&&owns('avatars',a.id)))});
 const names=['Rex','Vex','Kilo','Nova','Zed'],cols=['#d9382c','#2f9e44','#e8890c','#8e44ad','#16a2b8'];
-if(!isOnline)for(let i=0;i<+$('nb').value;i++){const b=mk(names[i],1,TEAMS?TC[i%2?0:1]:cols[i]);b.team=TEAMS?(i%2?0:1):-1;PL.push(b)}
+if(!isOnline)for(let i=0;i<+$('nb').value;i++){const b=mk(names[i],1,TEAMS?TC[i%2?0:1]:cols[i]);b.team=TEAMS?(i%2?0:1):-1;b.lo=['ak','shotgun','ak','sniper','rocket'][i%5];b.av=(i*3+1)%AV.length;PL.push(b)}
 B=[];G=[];P=[];EX=[];KF=[];PK=[];T=0;outShots=[];PL.forEach(spawn);
 const pk=(x,y,i)=>PK.push({x,y,w:20,h:16,vx:0,vy:0,on:0,k:rk(i),seed:i,id:'h'+i,t:0});
 MAP.forEach((p,i)=>{if(i>0&&p[2]>=200)pk(p[0]+p[2]/2-10,p[1]-16,i)});[450,1250,2050].forEach((x,i)=>pk(x,1020,100+i));
@@ -379,8 +386,8 @@ let UP={cr:100,lv:{hp:0,fuel:0,spd:0,dmg:0,rl:0,gren:0}};
 try{const v=JSON.parse(localStorage.getItem('jm-up'));if(v&&v.lv){UP.cr=+v.cr||0;Object.assign(UP.lv,v.lv)}}catch(e){}
 const saveUP=()=>{if(user)return;try{localStorage.setItem('jm-up',JSON.stringify(UP))}catch(e){}};
 const addCredits=n=>{UP.cr+=n;saveUP();upLabel()};
-function upLabel(){$('upBtn').textContent='Upgrades ('+(isAdmin()?'unlimited':UP.cr)+' credits)'}
-function renderUpg(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;$('upgList').innerHTML=UPGS.map(u=>{const l=UP.lv[u.k],c=(l+1)*50;
+function upLabel(){$('upBtn').textContent='Shop ('+(isAdmin()?'unlimited':UP.cr)+' credits)'}
+function renderUps(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;$('upgList').innerHTML=UPGS.map(u=>{const l=UP.lv[u.k],c=(l+1)*50;
 return '<div class="uc"><div class="un">'+u.n+'</div><div class="ud">'+u.d+'</div><div class="pips">'+'<i class="on"></i>'.repeat(l)+'<i></i>'.repeat(5-l)+'</div><button data-k="'+u.k+'"'+(l>=5||(!isAdmin()&&UP.cr<c)?' disabled':'')+'>'+(l>=5?'Maxed out':'Upgrade for '+c)+'</button></div>'}).join('');
 $('upgList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const k=b.dataset.k,l=UP.lv[k],c=(l+1)*50;if(l>=5)return;
 if(user){b.disabled=true;const r=await getSB().rpc('buy_upgrade',{p_key:k});if(r.error){$('umsg').textContent=r.error.message;return}$('umsg').textContent='';setUser(r.data);upLabel();renderUpg()}
@@ -389,11 +396,57 @@ $('upBtn').onclick=()=>{renderUpg();$('menu').hidden=true;$('end').hidden=true;$
 $('upBack').onclick=()=>{$('upg').hidden=true;$('menu').hidden=false};
 $('endUp').onclick=()=>{toMenu();$('upBtn').onclick()};
 $('gm').onchange=()=>{$('tmRow').hidden=$('gm').value!=='tdm'};upLabel();
+// ---- shop: guns and avatars
+const GUNP={ak:300,shotgun:400,sniper:600,rocket:900};
+const AV=[{id:'recruit',n:'Recruit',p:0,b:'#2f6fe0',h:'#3d4a2e',s:'#f1c27d',a:'helm'},{id:'woodland',n:'Woodland',p:150,b:'#4c6b2f',h:'#3f5a28',s:'#e0b080',a:'camo'},
+{id:'desert',n:'Desert Fox',p:150,b:'#c9a45c',h:'#e6d3a3',s:'#d9a066',a:'turban'},{id:'frost',n:'Frostbite',p:200,b:'#9fc7e8',h:'#7f9fba',s:'#f1c9b0',a:'fur'},
+{id:'shadow',n:'Shadow',p:300,b:'#23232b',h:'#16161c',s:'#f1c27d',a:'ninja'},{id:'buccaneer',n:'Buccaneer',p:350,b:'#7a2b2b',h:'#1a1a1a',s:'#e8b887',a:'pirate'},
+{id:'bolt',n:'Bolt',p:400,b:'#8a949c',h:'#b5bec6',s:'#8a949c',a:'robot'},{id:'paladin',n:'Paladin',p:450,b:'#aeb7c0',h:'#c9d1d8',s:'#f1c27d',a:'knight'},
+{id:'cosmonaut',n:'Cosmonaut',p:500,b:'#e8eef2',h:'#dfe9f0',s:'#f1c27d',a:'astro'},{id:'imp',n:'Imp',p:600,b:'#7d1f1f',h:'#b02a2a',s:'#d23a3a',a:'demon'},
+{id:'midas',n:'Midas',p:800,b:'#d4a82a',h:'#f2c93c',s:'#f1c27d',a:'gold'},{id:'monarch',n:'Monarch',p:1000,b:'#5b2a86',h:'#f2c93c',s:'#f1c27d',a:'crown'}];
+let INV={guns:[],avatars:['recruit'],gun:'',avatar:'recruit'},shopTab='up';
+try{const v=JSON.parse(localStorage.getItem('jm-inv'));if(v)INV=Object.assign(INV,v)}catch(e){}
+const saveINV=()=>{if(user)return;try{localStorage.setItem('jm-inv',JSON.stringify(INV))}catch(e){}};
+function owns(k,id){return isAdmin()||INV[k].includes(id)}
+function headGfx(c,av,d){const a=av.a;
+if(a==='robot'){c.fillStyle=av.h;c.fillRect(-7,-2,14,13);c.fillStyle='#e33';c.fillRect(d*2-4,3,3,3);c.fillRect(d*2+1,3,3,3);c.strokeStyle=av.h;c.lineWidth=1.5;c.beginPath();c.moveTo(0,-2);c.lineTo(0,-8);c.stroke();c.fillStyle='#e33';c.beginPath();c.arc(0,-9,2,0,7);c.fill();return}
+c.fillStyle=av.s;c.beginPath();c.arc(0,5,6,0,7);c.fill();
+if(a==='ninja'){c.fillStyle=av.h;c.beginPath();c.arc(0,5,6.6,0,7);c.fill();c.fillStyle=av.s;c.fillRect(-5,3,10,3);c.fillStyle='#fff';c.fillRect(d*2-1,4,2,1.5);return}
+if(a==='astro'){c.fillStyle=av.h;c.beginPath();c.arc(0,4,6.8,Math.PI,0);c.fill();c.fillStyle='#cfe8f5aa';c.beginPath();c.arc(0,5,8.5,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();c.fillStyle='#000';c.fillRect(d*2.5,4,2,2);return}
+if(a==='pirate'){c.fillStyle=av.h;c.beginPath();c.moveTo(-9,2);c.lineTo(0,-8);c.lineTo(9,2);c.closePath();c.fill();c.fillStyle='#fff';c.fillRect(-1,-3,2,2);c.fillStyle='#000';c.fillRect(d*2.5-1,3,4,4);return}
+if(a==='crown'){c.fillStyle='#f2c93c';c.beginPath();c.moveTo(-6,1);c.lineTo(-6,-6);c.lineTo(-3,-2);c.lineTo(0,-7);c.lineTo(3,-2);c.lineTo(6,-6);c.lineTo(6,1);c.closePath();c.fill();c.fillStyle='#000';c.fillRect(d*2.5,4,2,2);return}
+c.fillStyle=av.h;c.beginPath();c.arc(0,4,6.8,Math.PI,0);c.fill();
+if(a==='camo'){c.fillStyle='#2a3d1a';[[-4,0],[0,-2],[4,1],[2,2]].forEach(p=>c.fillRect(p[0],p[1],3,2))}
+else if(a==='turban'){c.beginPath();c.ellipse(0,0,8,5,0,0,7);c.fill()}
+else if(a==='fur'){c.fillStyle='#fff';for(let x=-6;x<=6;x+=4){c.beginPath();c.arc(x,4,2.6,0,7);c.fill()}}
+else if(a==='knight'){c.fillStyle='#222';c.fillRect(d>0?-1:-6,3,7,2);c.fillStyle='#d33';c.fillRect(-1.5,-8,3,5)}
+else if(a==='demon'){c.fillStyle='#3a0f0f';c.beginPath();c.moveTo(-6,-1);c.lineTo(-9,-9);c.lineTo(-3,-3);c.moveTo(6,-1);c.lineTo(9,-9);c.lineTo(3,-3);c.fill()}
+else if(a==='gold'){c.fillStyle='#fff8';c.fillRect(-4,-1,3,2)}
+c.fillStyle='#000';c.fillRect(d*2.5,4,2,2)}
+function avPreview(cn,av){const c=cn.getContext('2d');c.clearRect(0,0,cn.width,cn.height);c.save();c.translate(cn.width/2,26);c.scale(2,2);
+c.strokeStyle='#222';c.lineWidth=4;c.beginPath();c.moveTo(-3,24);c.lineTo(-3,34);c.moveTo(3,24);c.lineTo(3,34);c.stroke();c.fillStyle='#555';c.fillRect(-13,8,6,15);c.fillStyle=av.b;c.fillRect(-7,8,14,17);headGfx(c,av,1);c.restore()}
+function renderUpg(){shopTab==='gun'?renderGuns():shopTab==='av'?renderAvs():renderUps()}
+async function shopBuy(kind,id,price){const m=t=>$('umsg').textContent=t;
+if(user){const r=await getSB().rpc('buy_item',{p_kind:kind,p_id:id});if(r.error){m(r.error.message);return}setUser(r.data)}
+else{if(UP.cr<price){m('Not enough credits.');return}UP.cr-=price;INV[kind].push(id);saveUP();saveINV()}
+m('');upLabel();renderUpg()}
+async function shopEquip(kind,id){if(user){const r=await getSB().rpc('equip_item',{p_kind:kind,p_id:id});if(r.error){$('umsg').textContent=r.error.message;return}setUser(r.data)}
+else{INV[kind==='guns'?'gun':'avatar']=id;saveINV()}renderUpg()}
+function renderGuns(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;
+$('upgList').innerHTML=Object.keys(GUNP).map(k=>{const d=WP[k],o=owns('guns',k),eq=INV.gun===k,a=o?(eq?'un':'eq'):'buy';
+return '<div class="uc"><div class="un">'+d.n+'</div><div class="ud">'+(d.rocket?'Explosive blast':'Damage '+d.dmg+(d.pel>1?' x'+d.pel:''))+', '+d.mag+' per magazine, '+(d.rate<=6?'rapid':d.rate<=20?'fast':'slow')+' fire</div><button data-k="'+k+'" data-a="'+a+'"'+(a==='buy'&&!isAdmin()&&UP.cr<GUNP[k]?' disabled':'')+'>'+(a==='buy'?'Buy for '+GUNP[k]:eq?'Equipped (tap to remove)':'Equip')+'</button></div>'}).join('');
+$('upgList').querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=b.dataset.k,a=b.dataset.a;if(a==='buy')shopBuy('guns',k,GUNP[k]);else shopEquip('guns',a==='un'?'':k)})}
+function renderAvs(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;
+$('upgList').innerHTML=AV.map((v,i)=>{const o=owns('avatars',v.id),eq=INV.avatar===v.id,a=o?(eq?'eq0':'eq'):'buy';
+return '<div class="uc"><canvas class="av" width="64" height="96" data-i="'+i+'"></canvas><div class="un">'+v.n+'</div><button data-k="'+v.id+'" data-p="'+v.p+'" data-a="'+a+'"'+(a==='eq0'||(a==='buy'&&!isAdmin()&&UP.cr<v.p)?' disabled':'')+'>'+(a==='buy'?'Buy for '+v.p:eq?'Equipped':'Equip')+'</button></div>'}).join('');
+$('upgList').querySelectorAll('canvas.av').forEach(c=>avPreview(c,AV[+c.dataset.i]));
+$('upgList').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.a==='buy')shopBuy('avatars',b.dataset.k,+b.dataset.p);else shopEquip('avatars',b.dataset.k)})}
+$('shopTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopTab=b.dataset.t;$('shopTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));$('umsg').textContent='';renderUpg()});
 // ---- accounts (Supabase Auth + server-side profile; all money changes happen in SQL functions)
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function getSB(){return sb||(sb=window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{realtime:{params:{eventsPerSecond:25}}}):null)}
 function isAdmin(){return !!(user&&user.is_admin)}
-function setUser(p){user=p;UP.lv=Object.assign({hp:0,fuel:0,spd:0,dmg:0,rl:0,gren:0},p.upgrades);UP.cr=+p.credits}
+function setUser(p){user=p;INV=Object.assign({guns:[],avatars:['recruit'],gun:'',avatar:'recruit'},p.inventory||{});UP.lv=Object.assign({hp:0,fuel:0,spd:0,dmg:0,rl:0,gren:0},p.upgrades);UP.cr=+p.credits}
 function award(cr,k,won){if(user){if(!isAdmin())getSB().rpc('claim_match',{p_kills:k,p_won:won}).then(r=>{if(r.data){setUser(r.data);upLabel()}})}else{UP.cr+=cr;saveUP()}upLabel()}
 async function loadProfile(session){const r=await getSB().from('profiles').select('*').eq('id',session.user.id).maybeSingle();
 if(r.error||!r.data){$('amsg').textContent='Profile not found. Run supabase.sql in your Supabase project first.';return false}setUser(r.data);return true}
