@@ -270,11 +270,20 @@ $('outBtn').onclick=async()=>{if(user){try{await getSB().auth.signOut()}catch(e)
 async function loadPlayers(){const r=await getSB().from('profiles').select('email,username,credits').order('created_at');
 $('plistBox').innerHTML=r.error?esc(r.error.message):(r.data||[]).map(p=>'<div class="pl" data-e="'+esc(p.email)+'"><span>'+esc(p.username)+' ('+esc(p.email)+')</span><b>'+esc(p.credits)+'</b></div>').join('');
 $('plistBox').querySelectorAll('.pl').forEach(d=>d.onclick=()=>{$('admTo').value=d.dataset.e})}
-$('admBtn').onclick=()=>{$('menu').hidden=true;$('adm').hidden=false;$('admMsg').textContent='';loadPlayers()};
+$('admBtn').onclick=()=>{$('menu').hidden=true;$('adm').hidden=false;$('admMsg').textContent='';loadPlayers();loadCodes()};
 $('admBack').onclick=()=>{$('adm').hidden=true;$('menu').hidden=false};
 $('admSend').onclick=async()=>{const e=$('admTo').value.trim(),a=Math.floor(+$('admAmt').value),m=t=>$('admMsg').textContent=t;
 if(!e||!(a>0)){m('Enter a player email and an amount above 0.');return}
 const r=await getSB().rpc('admin_transfer',{p_email:e,p_amount:a});m(r.error?r.error.message:'Sent '+a+' credits to '+e+'.');loadPlayers()};
+// ---- redeem codes (validated and paid out by SQL functions)
+$('redeem').onclick=async()=>{const c=$('codeIn').value.trim(),m=t=>$('umsg').textContent=t;if(!user){m('Sign in with an account to redeem codes.');return}if(!c){m('Enter a code.');return}
+const r=await getSB().rpc('redeem_code',{p_code:c});if(r.error){m(r.error.message);return}setUser(r.data);$('codeIn').value='';upLabel();renderUpg();m('Code redeemed. Credits added.')};
+async function loadCodes(){const r=await getSB().from('codes').select('code,credits,max_uses,uses').order('created_at',{ascending:false});
+$('codeBox').innerHTML=r.error?esc(r.error.message):(r.data||[]).map(c=>'<div class="pl" data-c="'+esc(c.code)+'"><span>'+esc(c.code)+' ('+esc(c.credits)+' credits)</span><b>'+esc(c.uses)+'/'+esc(c.max_uses)+' used</b></div>').join('')||'<div class="pl"><span>No codes yet.</span></div>';
+$('codeBox').querySelectorAll('[data-c]').forEach(d=>d.onclick=()=>{$('codeIn').value=d.dataset.c;$('admMsg').textContent='Code '+d.dataset.c+' selected. Copy it from the box.'})}
+$('admMk').onclick=async()=>{const cr=Math.floor(+$('admCr').value),u=Math.floor(+$('admUses').value)||1,m=t=>$('admMsg').textContent=t;if(!(cr>0)){m('Enter credits above 0.');return}
+const r=await getSB().rpc('admin_create_code',{p_code:$('admCode').value.trim()||null,p_credits:cr,p_max_uses:u});
+m(r.error?r.error.message:'Created code '+r.data+' for '+cr+' credits, '+u+' use(s).');if(!r.error)$('admCode').value='';loadCodes()};
 (async()=>{try{const sc=getSB();if(sc){const r=await sc.auth.getSession();if(r.data&&r.data.session&&await loadProfile(r.data.session)){showMenu();return}}}catch(e){}$('auth').hidden=false})();
 let last=0,acc=0;function frame(t){requestAnimationFrame(frame);acc+=Math.min(100,t-last);last=t;
 while(acc>=16.67){acc-=16.67;if(state==='play')tick()}

@@ -55,3 +55,7 @@ input:focus,select:focus{outline:2px solid #ff9a2e;outline-offset:1px}
 #plistBox{max-height:200px;overflow:auto;border:1px solid #4a5a36;border-radius:8px}
 .pl{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;cursor:pointer;font-size:.9rem}
 .pl:hover{background:#26331c}.pl+.pl{border-top:1px solid #2c3a20}
+
+.rrow{display:flex;gap:8px}.rrow input{flex:1;text-transform:uppercase}.rrow button{padding:8px 16px}
+h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
+#codeBox{max-height:160px;overflow:auto;border:1px solid #4a5a36;border-radius:8px}
