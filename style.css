@@ -72,3 +72,5 @@ h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
 .card.wide>*{flex-shrink:0}
 
 canvas.av{width:64px;height:96px}
+
+#shopTabs{grid-template-columns:repeat(4,1fr)}
