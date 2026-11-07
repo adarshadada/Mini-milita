@@ -18,20 +18,22 @@
 <label>Callsign (email sign-ups only)<input id="auser" maxlength="12" autocomplete="off"></label>
 <button id="aIn" class="pri">Sign in</button><button id="aUp" class="ghost">Create account</button><button id="guest" class="ghost">Play offline as guest</button>
 <p id="amsg" role="status"></p></div></section>
-<section id="menu" hidden><div class="card">
-<div class="side">
-<svg class="logo" viewBox="0 0 320 120" role="img" aria-label="Jetpack Militia"><use href="#logo"/></svg>
-<p class="lead">Strap on a jetpack and win a deathmatch against bots or real players.</p>
-<dl class="help">
-<dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, E or right-click power, F fullscreen</dd>
-<dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Use the side buttons for grenade, swap, reload and power.</dd>
-</dl></div>
-<div class="form">
-<p id="who" class="note"></p>
+<section id="menu" hidden><div class="mwrap">
+<header class="mtop"><svg class="logo" viewBox="0 0 320 120" role="img" aria-label="Jetpack Militia"><use href="#logo"/></svg>
+<div class="acct"><canvas id="chipAv" width="64" height="96"></canvas>
+<div class="ainfo"><b id="chipName">Guest</b><span id="who"></span></div>
+<span class="pill" id="chipCr"></span>
+<button id="upBtn" class="chip">Shop</button><button id="admBtn" class="chip" hidden>Admin panel</button><button id="outBtn" class="chip">Sign in</button></div></header>
+<div class="mmain">
+<div class="panel mcol">
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
+<h3>Game mode</h3><div class="tiles" id="gmTiles"></div>
+<h3>Map</h3><div class="tiles maps" id="mpTiles"></div>
+</div>
+<aside class="panel mside">
 <label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
-<label>Game mode<select id="gm"><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option><option value="surv">Survival waves (solo)</option></select></label>
-<label>Map<select id="mp"><option value="high">Highlands</option><option value="desert">Desert Dunes</option><option value="ice">Frozen Peaks</option><option value="lava">Volcano</option><option value="sea">Corsair Seas</option></select></label>
+<select id="gm" hidden><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option><option value="surv">Survival waves (solo)</option></select>
+<select id="mp" hidden><option value="high">Highlands</option><option value="desert">Desert Dunes</option><option value="ice">Frozen Peaks</option><option value="lava">Volcano</option><option value="sea">Corsair Seas</option></select>
 <div id="soloOpts">
 <label>Enemy bots<select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
 <label>Difficulty<select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
@@ -40,15 +42,14 @@
 <div id="onOpts" hidden>
 <label>Room code<input id="room" maxlength="12" placeholder="lobby" autocomplete="off"></label>
 <label id="tmRow" hidden>Your team<select id="tm"><option value="0">Blue</option><option value="1">Red</option></select></label>
-<p class="note">Friends who enter the same room code and game mode play together. Free for all goes to 15 kills, team games to 20 team kills. Turn on the Voice switch during a match to talk with the room (needs a microphone).</p>
+<p class="note">Friends who enter the same room code, map and game mode play together. Use the Voice switch during a match to talk (needs a microphone).</p>
 </div>
 <button id="play">Deploy</button>
-<button id="upBtn" class="ghost">Shop</button>
 <p id="msg" role="status"></p>
-<button id="admBtn" class="ghost" hidden>Admin panel</button>
-<button id="outBtn" class="ghost">Sign in</button>
 <button id="fsBtn" class="ghost">Toggle fullscreen</button>
-</div></div></section>
+<dl class="help"><dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, E or right-click power, F fullscreen, V mute</dd>
+<dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Side buttons: grenade, swap, reload, power.</dd></dl>
+</aside></div></div></section>
 <section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Shop</button></div></section>
 <section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Shop</h1><div class="credits"><span id="cr">0</span> credits</div></div>
 <p class="note">Earn credits from kills and by finishing matches. Purchases are saved to your account (or to this device if you play as a guest).</p>
