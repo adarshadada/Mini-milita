@@ -7,8 +7,9 @@
 <body>
 <canvas id="c"></canvas>
 <div id="tools" hidden><button id="fs">Fullscreen</button><button id="quit">Exit</button>
-<label id="godSw" class="sw" hidden><input type="checkbox" id="god"><span class="knob"></span>Unkillable</label></div>
-<div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button></div>
+<label id="godSw" class="sw" hidden><input type="checkbox" id="god"><span class="knob"></span>Unkillable</label>
+<label id="vcSw" class="sw" hidden><input type="checkbox" id="vc"><span class="knob"></span>Voice</label><button id="mute" hidden>Mute</button></div>
+<div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button><button id="bP">Power</button></div>
 <section id="auth"><div class="card one"><h1>Jetpack Militia</h1><p class="lead">Pick a username and password. No email needed.</p>
 <label>Username or email<input id="aemail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
 <label>Password<input id="apass" type="password" autocomplete="current-password"></label>
@@ -20,14 +21,15 @@
 <h1>Jetpack Militia</h1>
 <p class="lead">Strap on a jetpack and win a deathmatch against bots or real players.</p>
 <dl class="help">
-<dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, F fullscreen</dd>
-<dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Use the side buttons for grenade, swap and reload.</dd>
+<dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, E or right-click power, F fullscreen</dd>
+<dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Use the side buttons for grenade, swap, reload and power.</dd>
 </dl></div>
 <div class="form">
 <p id="who" class="note"></p>
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
 <label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
-<label>Game mode<select id="gm"><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option></select></label>
+<label>Game mode<select id="gm"><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option><option value="surv">Survival waves (solo)</option></select></label>
+<label>Map<select id="mp"><option value="high">Highlands</option><option value="desert">Desert Dunes</option><option value="ice">Frozen Peaks</option><option value="lava">Volcano</option><option value="sea">Corsair Seas</option></select></label>
 <div id="soloOpts">
 <label>Enemy bots<select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
 <label>Difficulty<select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
@@ -36,7 +38,7 @@
 <div id="onOpts" hidden>
 <label>Room code<input id="room" maxlength="12" placeholder="lobby" autocomplete="off"></label>
 <label id="tmRow" hidden>Your team<select id="tm"><option value="0">Blue</option><option value="1">Red</option></select></label>
-<p class="note">Friends who enter the same room code and game mode play together. Free for all goes to 15 kills, team games to 20 team kills.</p>
+<p class="note">Friends who enter the same room code and game mode play together. Free for all goes to 15 kills, team games to 20 team kills. Turn on the Voice switch during a match to talk with the room (needs a microphone).</p>
 </div>
 <button id="play">Deploy</button>
 <button id="upBtn" class="ghost">Shop</button>
@@ -48,7 +50,7 @@
 <section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Shop</button></div></section>
 <section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Shop</h1><div class="credits"><span id="cr">0</span> credits</div></div>
 <p class="note">Earn credits from kills and by finishing matches. Purchases are saved to your account (or to this device if you play as a guest).</p>
-<div class="tabs" id="shopTabs"><button data-t="up" class="on">Upgrades</button><button data-t="gun">Guns</button><button data-t="av">Avatars</button></div>
+<div class="tabs" id="shopTabs"><button data-t="up" class="on">Upgrades</button><button data-t="gun">Guns</button><button data-t="av">Avatars</button><button data-t="pw">Powers</button></div>
 <div class="rrow"><input id="codeIn" placeholder="Enter a code" maxlength="20" autocomplete="off"><button id="redeem" class="pri">Redeem</button></div>
 <p id="umsg" class="note"></p><div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
 <section id="adm" hidden><div class="card wide"><div class="uhead"><h1>Admin panel</h1><div class="credits">Unlimited credits</div></div>
