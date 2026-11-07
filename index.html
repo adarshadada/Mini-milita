@@ -1,21 +1,39 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>Jetpack Militia</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#141b0e">
 <link rel="stylesheet" href="style.css"></head>
 <body>
 <canvas id="c"></canvas>
-<div id="touch"><button id="bG" aria-label="Grenade">💣</button><button id="bS" aria-label="Swap weapon">⇄</button><button id="bR" aria-label="Reload">⟳</button></div>
-<section id="menu"><div class="panel">
+<div id="tools" hidden><button id="fs">Fullscreen</button><button id="quit">Exit</button></div>
+<div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button></div>
+<section id="menu"><div class="card">
+<div class="side">
 <h1>Jetpack Militia</h1>
-<p>Fly, shoot and out-score the bots in a free-for-all deathmatch.</p>
-<label>Enemy bots <select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-<label>Difficulty <select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
-<label>Kills to win <select id="kt"><option>10</option><option selected>15</option><option>25</option></select></label>
+<p class="lead">Strap on a jetpack and win a deathmatch against bots or real players.</p>
+<dl class="help">
+<dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, F fullscreen</dd>
+<dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Use the side buttons for grenade, swap and reload.</dd>
+</dl></div>
+<div class="form">
+<div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
+<label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
+<div id="soloOpts">
+<label>Enemy bots<select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+<label>Difficulty<select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
+<label>Kills to win<select id="kt"><option>10</option><option selected>15</option><option>25</option></select></label>
+</div>
+<div id="onOpts" hidden>
+<label>Room code<input id="room" maxlength="12" placeholder="lobby" autocomplete="off"></label>
+<p class="note">Friends who enter the same room code play together. Online matches go to 15 kills.</p>
+</div>
 <button id="play">Deploy</button>
-<div class="help"><b>Desktop:</b> A/D move, W or Space jetpack, mouse aim, click fire, G grenade, R reload, Q swap gun.<br>
-<b>Phone (landscape):</b> left stick moves, push it up to fly. Right stick aims, push it far to fire. Buttons: grenade, swap, reload.</div>
-</div></section>
-<section id="end" hidden><div class="panel"><h1 id="endt"></h1><button id="again">Back to menu</button></div></section>
+<p id="msg" role="status"></p>
+<button id="fsBtn" class="ghost">Toggle fullscreen</button>
+</div></div></section>
+<section id="end" hidden><div class="card one"><h1 id="endt"></h1><button id="again">Back to menu</button></div></section>
 <div id="rot">Rotate your phone to landscape</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
 </body></html>
