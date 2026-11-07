@@ -8,7 +8,13 @@
 <canvas id="c"></canvas>
 <div id="tools" hidden><button id="fs">Fullscreen</button><button id="quit">Exit</button></div>
 <div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button></div>
-<section id="menu"><div class="card">
+<section id="auth"><div class="card one"><h1>Jetpack Militia</h1><p class="lead">Sign in to save credits and play online.</p>
+<label>Email<input id="aemail" type="email" autocomplete="email"></label>
+<label>Password<input id="apass" type="password" autocomplete="current-password"></label>
+<label>Callsign (new accounts)<input id="auser" maxlength="12" autocomplete="off"></label>
+<button id="aIn" class="pri">Sign in</button><button id="aUp" class="ghost">Create account</button><button id="guest" class="ghost">Play offline as guest</button>
+<p id="amsg" role="status"></p></div></section>
+<section id="menu" hidden><div class="card">
 <div class="side">
 <h1>Jetpack Militia</h1>
 <p class="lead">Strap on a jetpack and win a deathmatch against bots or real players.</p>
@@ -17,6 +23,7 @@
 <dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Use the side buttons for grenade, swap and reload.</dd>
 </dl></div>
 <div class="form">
+<p id="who" class="note"></p>
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
 <label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
 <label>Game mode<select id="gm"><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option></select></label>
@@ -33,12 +40,20 @@
 <button id="play">Deploy</button>
 <button id="upBtn" class="ghost">Upgrades</button>
 <p id="msg" role="status"></p>
+<button id="admBtn" class="ghost" hidden>Admin panel</button>
+<button id="outBtn" class="ghost">Sign in</button>
 <button id="fsBtn" class="ghost">Toggle fullscreen</button>
 </div></div></section>
 <section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Upgrades</button></div></section>
 <section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Upgrades</h1><div class="credits"><span id="cr">0</span> credits</div></div>
 <p class="note">Earn credits from kills and by finishing matches. Upgrades are saved on this device and apply in every mode.</p>
-<div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
+<p id="umsg" class="note"></p><div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
+<section id="adm" hidden><div class="card wide"><div class="uhead"><h1>Admin panel</h1><div class="credits">Unlimited credits</div></div>
+<p class="note">Send credits to any player. Click a player below to fill in their email.</p>
+<label>Player email<input id="admTo" type="email" autocomplete="off"></label>
+<label>Amount<input id="admAmt" type="number" min="1" value="500"></label>
+<button id="admSend" class="pri">Send credits</button><p id="admMsg" class="note"></p>
+<div id="plistBox"></div><button id="admBack" class="ghost">Back</button></div></section>
 <div id="rot">Rotate your phone to landscape</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
