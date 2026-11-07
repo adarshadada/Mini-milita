@@ -1,7 +1,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#141b0e;color:#f1ead0;font-family:"Trebuchet MS",system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
 canvas{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;touch-action:none;cursor:none;display:block}
-#menu,#end{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at top,#2c3d20,#141b0e 70%);z-index:4;padding:max(12px,env(safe-area-inset-top)) 12px;overflow:auto}
+#menu,#end,#upg{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at top,#2c3d20,#141b0e 70%);z-index:4;padding:max(12px,env(safe-area-inset-top)) 12px;overflow:auto}
 .card{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;width:100%;max-width:880px;background:#1d2616;border:1px solid #4a5a36;border-radius:12px;padding:28px}
 .card.one{grid-template-columns:1fr;max-width:420px;text-align:center}
 .side{display:flex;flex-direction:column;gap:14px;justify-content:center}
@@ -37,4 +37,14 @@ input:focus,select:focus{outline:2px solid #ff9a2e;outline-offset:1px}
 #rot{display:none;position:fixed;inset:0;z-index:9;background:#141b0e;place-items:center;text-align:center;font-size:1.4rem;padding:20px}
 @media (orientation:portrait) and (pointer:coarse){#rot{display:grid}}
 [hidden]{display:none!important}
-       
+
+.card.one{display:flex;flex-direction:column;gap:12px}
+.card.wide{display:flex;flex-direction:column;gap:14px;max-height:calc(100dvh - 24px);overflow:auto}
+.uhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.credits{font-weight:700;color:#ffd54a;font-size:1.1rem}
+#upgList{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.uc{display:flex;flex-direction:column;gap:6px;background:#141b0e;border:1px solid #4a5a36;border-radius:8px;padding:12px}
+.un{font-weight:700;color:#fff}.ud{font-size:.8rem;color:#b9b18c;min-height:2.4em}
+.pips{display:flex;gap:4px}.pips i{flex:1;height:6px;border-radius:3px;background:#3a4a2a}.pips i.on{background:#ff9a2e}
+.uc button{padding:8px;background:#ff9a2e;color:#141b0e;border:0;border-radius:6px;font-weight:700}
+.uc button:disabled{background:#3a4a2a;color:#8a8a6a;cursor:default}
