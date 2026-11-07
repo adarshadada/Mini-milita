@@ -8,10 +8,10 @@
 <canvas id="c"></canvas>
 <div id="tools" hidden><button id="fs">Fullscreen</button><button id="quit">Exit</button></div>
 <div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button></div>
-<section id="auth"><div class="card one"><h1>Jetpack Militia</h1><p class="lead">Sign in to save credits and play online.</p>
-<label>Email<input id="aemail" type="email" autocomplete="email"></label>
+<section id="auth"><div class="card one"><h1>Jetpack Militia</h1><p class="lead">Pick a username and password. No email needed.</p>
+<label>Username or email<input id="aemail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
 <label>Password<input id="apass" type="password" autocomplete="current-password"></label>
-<label>Callsign (new accounts)<input id="auser" maxlength="12" autocomplete="off"></label>
+<label>Callsign (email sign-ups only)<input id="auser" maxlength="12" autocomplete="off"></label>
 <button id="aIn" class="pri">Sign in</button><button id="aUp" class="ghost">Create account</button><button id="guest" class="ghost">Play offline as guest</button>
 <p id="amsg" role="status"></p></div></section>
 <section id="menu" hidden><div class="card">
@@ -51,7 +51,7 @@
 <p id="umsg" class="note"></p><div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
 <section id="adm" hidden><div class="card wide"><div class="uhead"><h1>Admin panel</h1><div class="credits">Unlimited credits</div></div>
 <p class="note">Send credits to any player. Click a player below to fill in their email.</p>
-<label>Player email<input id="admTo" type="email" autocomplete="off"></label>
+<label>Player username or email<input id="admTo" type="text" autocomplete="off" autocapitalize="none"></label>
 <label>Amount<input id="admAmt" type="number" min="1" value="500"></label>
 <button id="admSend" class="pri">Send credits</button><p id="admMsg" class="note"></p>
 <div id="plistBox"></div>
