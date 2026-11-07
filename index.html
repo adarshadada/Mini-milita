@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Jetpack Militia</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<canvas id="c"></canvas>
+<div id="touch"><button id="bG" aria-label="Grenade">💣</button><button id="bS" aria-label="Swap weapon">⇄</button><button id="bR" aria-label="Reload">⟳</button></div>
+<section id="menu"><div class="panel">
+<h1>Jetpack Militia</h1>
+<p>Fly, shoot and out-score the bots in a free-for-all deathmatch.</p>
+<label>Enemy bots <select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+<label>Difficulty <select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
+<label>Kills to win <select id="kt"><option>10</option><option selected>15</option><option>25</option></select></label>
+<button id="play">Deploy</button>
+<div class="help"><b>Desktop:</b> A/D move, W or Space jetpack, mouse aim, click fire, G grenade, R reload, Q swap gun.<br>
+<b>Phone (landscape):</b> left stick moves, push it up to fly. Right stick aims, push it far to fire. Buttons: grenade, swap, reload.</div>
+</div></section>
+<section id="end" hidden><div class="panel"><h1 id="endt"></h1><button id="again">Back to menu</button></div></section>
+<div id="rot">Rotate your phone to landscape</div>
+<script src="script.js"></script>
+</body></html>
