@@ -59,3 +59,10 @@ input:focus,select:focus{outline:2px solid #ff9a2e;outline-offset:1px}
 .rrow{display:flex;gap:8px}.rrow input{flex:1;text-transform:uppercase}.rrow button{padding:8px 16px}
 h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
 #codeBox{max-height:160px;overflow:auto;border:1px solid #4a5a36;border-radius:8px}
+
+#tools{flex-wrap:wrap;max-width:60vw;align-items:center}
+.sw{display:flex;align-items:center;gap:8px;padding:5px 10px;background:#1d2616c0;border:1px solid #4a5a36;border-radius:6px;font-size:12px;cursor:pointer;color:#f1ead0}
+.sw input{display:none}
+.sw .knob{width:34px;height:18px;border-radius:9px;background:#3a4a2a;position:relative;transition:background .15s}
+.sw .knob::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.sw input:checked+.knob{background:#2fb4e0}.sw input:checked+.knob::after{left:18px}
