@@ -19,6 +19,7 @@
 <div class="form">
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
 <label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
+<label>Game mode<select id="gm"><option value="ffa">Free for all</option><option value="tdm">Team deathmatch</option></select></label>
 <div id="soloOpts">
 <label>Enemy bots<select id="nb"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
 <label>Difficulty<select id="df"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></label>
@@ -26,13 +27,18 @@
 </div>
 <div id="onOpts" hidden>
 <label>Room code<input id="room" maxlength="12" placeholder="lobby" autocomplete="off"></label>
-<p class="note">Friends who enter the same room code play together. Online matches go to 15 kills.</p>
+<label id="tmRow" hidden>Your team<select id="tm"><option value="0">Blue</option><option value="1">Red</option></select></label>
+<p class="note">Friends who enter the same room code and game mode play together. Free for all goes to 15 kills, team games to 20 team kills.</p>
 </div>
 <button id="play">Deploy</button>
+<button id="upBtn" class="ghost">Upgrades</button>
 <p id="msg" role="status"></p>
 <button id="fsBtn" class="ghost">Toggle fullscreen</button>
 </div></div></section>
-<section id="end" hidden><div class="card one"><h1 id="endt"></h1><button id="again">Back to menu</button></div></section>
+<section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Upgrades</button></div></section>
+<section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Upgrades</h1><div class="credits"><span id="cr">0</span> credits</div></div>
+<p class="note">Earn credits from kills and by finishing matches. Upgrades are saved on this device and apply in every mode.</p>
+<div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
 <div id="rot">Rotate your phone to landscape</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
