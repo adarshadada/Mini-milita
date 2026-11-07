@@ -1,1 +1,14 @@
-
+name: Unzip game
+on: [push, workflow_dispatch]
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip game-hub.zip
+        run: unzip -o game-hub.zip -d site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: game-hub
+          path: site/game-hub
+          
