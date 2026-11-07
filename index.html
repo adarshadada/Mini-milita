@@ -3,14 +3,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#141b0e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2260%22%20r%3D%2250%22%20fill%3D%22%2326331c%22%20stroke%3D%22%23ff9a2e%22%20stroke-width%3D%225%22/%3E%3Crect%20x%3D%2226%22%20y%3D%2260%22%20width%3D%229%22%20height%3D%2222%22%20rx%3D%224%22%20fill%3D%22%238a949c%22/%3E%3Crect%20x%3D%2285%22%20y%3D%2260%22%20width%3D%229%22%20height%3D%2222%22%20rx%3D%224%22%20fill%3D%22%238a949c%22/%3E%3Cpath%20d%3D%22M26.5%2082h8q-4%2013-8%200z%22%20fill%3D%22%23ffcf4a%22/%3E%3Cpath%20d%3D%22M85.5%2082h8q-4%2013-8%200z%22%20fill%3D%22%23ffcf4a%22/%3E%3Cpath%20d%3D%22M36%2058a24%2024%200%200%201%2048%200z%22%20fill%3D%22%234a5a36%22/%3E%3Crect%20x%3D%2240%22%20y%3D%2258%22%20width%3D%2240%22%20height%3D%2216%22%20rx%3D%226%22%20fill%3D%22%23f1c27d%22/%3E%3Crect%20x%3D%2234%22%20y%3D%2255%22%20width%3D%2252%22%20height%3D%226%22%20rx%3D%223%22%20fill%3D%22%232f3a22%22/%3E%3Crect%20x%3D%2266%22%20y%3D%2264%22%20width%3D%225%22%20height%3D%225%22%20fill%3D%22%23000%22/%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%2243%22%20r%3D%225%22%20fill%3D%22%23ff9a2e%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css"></head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="logo" viewBox="0 0 320 120"><circle cx="60" cy="60" r="50" fill="#26331c" stroke="#ff9a2e" stroke-width="5"/><rect x="26" y="60" width="9" height="22" rx="4" fill="#8a949c"/><rect x="85" y="60" width="9" height="22" rx="4" fill="#8a949c"/><path d="M26.5 82h8q-4 13-8 0z" fill="#ffcf4a"/><path d="M85.5 82h8q-4 13-8 0z" fill="#ffcf4a"/><path d="M36 58a24 24 0 0 1 48 0z" fill="#4a5a36"/><rect x="40" y="58" width="40" height="16" rx="6" fill="#f1c27d"/><rect x="34" y="55" width="52" height="6" rx="3" fill="#2f3a22"/><rect x="66" y="64" width="5" height="5" fill="#000"/><circle cx="60" cy="43" r="5" fill="#ff9a2e"/><text x="124" y="56" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="34" fill="#ff9a2e" textLength="185" lengthAdjust="spacingAndGlyphs">JETPACK</text><text x="124" y="94" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="34" fill="#f1ead0" textLength="185" lengthAdjust="spacingAndGlyphs">MILITIA</text></symbol><symbol id="gren" viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="7" ry="8" fill="#3f5d2b" stroke="#26401a"/><rect x="9" y="3" width="6" height="4" fill="#8a8f94"/><path d="M15 5q6 0 6 6" stroke="#8a8f94" stroke-width="2" fill="none"/><circle cx="7" cy="5" r="2.2" stroke="#d8c88a" fill="none"/><path d="M5 14h14M12 7v14" stroke="#26401a" stroke-width="1"/></symbol></defs></svg>
 <canvas id="c"></canvas>
 <div id="tools" hidden><button id="fs">Fullscreen</button><button id="quit">Exit</button>
 <label id="godSw" class="sw" hidden><input type="checkbox" id="god"><span class="knob"></span>Unkillable</label>
 <label id="vcSw" class="sw" hidden><input type="checkbox" id="vc"><span class="knob"></span>Voice</label><button id="mute" hidden>Mute</button></div>
-<div id="touch"><button id="bG">Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button><button id="bP">Power</button></div>
-<section id="auth"><div class="card one"><h1>Jetpack Militia</h1><p class="lead">Pick a username and password. No email needed.</p>
+<div id="touch"><button id="bG"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><use href="#gren"/></svg>Grenade</button><button id="bS">Swap</button><button id="bR">Reload</button><button id="bP">Power</button></div>
+<section id="auth"><div class="card one"><svg class="logo" viewBox="0 0 320 120" role="img" aria-label="Jetpack Militia"><use href="#logo"/></svg><p class="lead">Pick a username and password. No email needed.</p>
 <label>Username or email<input id="aemail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
 <label>Password<input id="apass" type="password" autocomplete="current-password"></label>
 <label>Callsign (email sign-ups only)<input id="auser" maxlength="12" autocomplete="off"></label>
@@ -18,7 +20,7 @@
 <p id="amsg" role="status"></p></div></section>
 <section id="menu" hidden><div class="card">
 <div class="side">
-<h1>Jetpack Militia</h1>
+<svg class="logo" viewBox="0 0 320 120" role="img" aria-label="Jetpack Militia"><use href="#logo"/></svg>
 <p class="lead">Strap on a jetpack and win a deathmatch against bots or real players.</p>
 <dl class="help">
 <dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, E or right-click power, F fullscreen</dd>

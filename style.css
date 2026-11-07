@@ -29,7 +29,7 @@ input:focus,select:focus{outline:2px solid #ff9a2e;outline-offset:1px}
 #tools button{font:inherit;font-size:12px;padding:6px 10px;background:#1d2616c0;color:#f1ead0;border:1px solid #4a5a36;border-radius:6px;cursor:pointer}
 #tools button:hover{background:#3a4a2a}
 #touch{display:none;position:fixed;right:calc(14px + env(safe-area-inset-right,0px));top:36%;z-index:3;flex-direction:column;gap:10px}
-#touch button{width:76px;height:42px;border-radius:8px;border:1px solid #d8c88a;background:#1d2616cc;color:#fff;font:inherit;font-size:13px;font-weight:700;touch-action:none}
+#touch button{display:flex;align-items:center;justify-content:center;gap:5px;width:86px;height:42px;border-radius:8px;border:1px solid #d8c88a;background:#1d2616cc;color:#fff;font:inherit;font-size:13px;font-weight:700;touch-action:none}
 #touch button:active{background:#ff9a2e;color:#141b0e}
 @media (pointer:coarse){#touch{display:flex}#c{cursor:default}}
 @media (max-width:700px),(max-height:430px){.card{grid-template-columns:1fr 1fr;gap:16px;padding:16px}.lead{font-size:.9rem}.help{font-size:.75rem}h1{font-size:1.7rem}.form{gap:8px}input,select{padding:5px 8px}}
@@ -74,3 +74,6 @@ h2{margin:6px 0 0;font-size:1.1rem;color:#d8c88a}
 canvas.av{width:64px;height:96px}
 
 #shopTabs{grid-template-columns:repeat(4,1fr)}
+
+.logo{display:block;width:100%;max-width:300px;height:auto;margin:0 auto}
+.side .logo{margin:0}
