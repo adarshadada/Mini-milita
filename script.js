@@ -351,7 +351,7 @@ let RM=null,lobby=null,lobbyReady=false,lobbyPending=null,POWERS=true,AIRDROP=tr
 const rndId=()=>Math.random().toString(36).slice(2,8);
 const defaultCfg=()=>({mode:'ffa',map:'high',kills:15,powers:true,airdrop:true,max:8});
 function setMsg(t){$('msg').textContent=t}
-function setBusy(v){$('mkRoom').disabled=v;$('qp').disabled=v}
+function setBusy(v){}
 let pendingJoin=(location.hash.match(/room=([a-z0-9]{4,20})/i)||[])[1]||null,lobbyErr='';
 let lastSubErr='';
 function subscribeWithTimeout(ch,ms){return new Promise(res=>{let done=false;const t=setTimeout(()=>{if(!done){done=true;res('TIMEOUT')}},ms);
@@ -413,13 +413,13 @@ function setRoomTeam(t){const R=RM;if(!R)return;R.team=t;try{R.ch.track(myPayloa
 function roomMsg(p){if(p&&p.t==='start'&&RM&&!RM.host)startOnline(p.cfg)}
 function startOnline(cfg){const R=RM;if(!R)return;enterFS();beginMatch(true,cfg,cfg.mode==='tdm'?Math.max(0,R.team):-1)}
 function resetMatch(){PL=[];me=null;B=[];G=[];P=[];EX=[];KF=[];PK=[];FT=[];ARMS=[];BN.l=0}
-function closeRoom(){const R=RM;if(!R)return;RM=null;
+function closeRoom(){const R=RM;if(!R){if(touchTimer){clearInterval(touchTimer);touchTimer=null}try{voiceLeave(true)}catch(e){};if(ch&&sb){try{sb.removeChannel(ch)}catch(e){}}ch=null;online=false;return}RM=null;
  try{voiceLeave(true)}catch(e){}
  try{if(R.host&&lobbyReady&&lobby)lobby.untrack()}catch(e){}
  try{R.ch.untrack()}catch(e){}
  try{getSB().removeChannel(R.ch)}catch(e){}
  ch=null;online=false}
-function leaveRoom(msg){closeRoom();resetMatch();state='menu';$('room').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('menu').hidden=false;$('play').disabled=false;setBusy(false);setMsg(msg||'');if(mode==='online'){lobbyConnect();renderRooms()}}
+function leaveRoom(msg){closeRoom();resetMatch();state='menu';$('room').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('menu').hidden=false;$('play').disabled=false;setBusy(false);setMsg(msg||'');if(mode==='online')loadRooms()}
 function toMenu(){leaveRoom('')}
 function showRoom(){state='room';$('menu').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('room').hidden=false;renderRoom()}
 function backToRoom(){if(!RM){toMenu();return}voiceLeave(true);resetMatch();$('end').hidden=true;$('tools').hidden=true;$('vcSw').hidden=true;showRoom()}
@@ -453,9 +453,9 @@ $('rCopy').onclick=async()=>{const t=$('rLink').value;let ok=false;
  if(navigator.share){try{await navigator.share({title:'Jetpack Militia',text:'Join my room',url:t});return}catch(e){}}
  try{await navigator.clipboard.writeText(t);ok=true}catch(e){$('rLink').select();try{ok=document.execCommand('copy')}catch(x){}}
  $('rCopy').textContent=ok?'Link copied':'Press Ctrl+C to copy';setTimeout(()=>$('rCopy').textContent='Copy invite link',1600)};
-function setMode(m){mode=m;$('solTiles').hidden=m==='online';$('tSolo').classList.toggle('on',m==='solo');$('tOn').classList.toggle('on',m==='online');$('soloOpts').hidden=m!=='solo';$('onOpts').hidden=m==='solo';$('play').hidden=m!=='solo';$('msg').textContent='';if(m==='online'&&$('gm').value==='surv')pickTile('gm','ffa');if(m==='online'){lobbyConnect();renderRooms()}else lobbyLeave()}
+function setMode(m){mode=m;$('solTiles').hidden=false;$('tSolo').classList.toggle('on',m==='solo');$('tOn').classList.toggle('on',m==='online');$('soloOpts').hidden=m!=='solo';$('onOpts').hidden=m==='solo';$('play').hidden=false;$('msg').textContent='';if(m==='online'&&$('gm').value==='surv')pickTile('gm','ffa');if(m!=='online')lobbyLeave();else loadRooms()}
 $('tSolo').onclick=()=>setMode('solo');$('tOn').onclick=()=>setMode('online');
-$('play').onclick=()=>{enterFS();beginMatch(false)};$('mkRoom').onclick=createRoom;$('qp').onclick=quickPlay;$('diagBtn').onclick=()=>runDiag();
+$('play').onclick=()=>{enterFS();if(mode==='online')startOnline();else beginMatch(false)};
 $('fsBtn').onclick=toggleFS;$('fs').onclick=toggleFS;$('quit').onclick=()=>{if(RM&&online)backToRoom();else toMenu()};$('again').onclick=()=>{if(RM)backToRoom();else toMenu()};
 try{$('name').value=localStorage.getItem('jm-name')||''}catch(e){}
 // ---- win check, credits, upgrades
@@ -601,6 +601,40 @@ setInterval(refreshProfile,15000);
 // ---- unkillable switch (admin only)
 try{godPref=localStorage.getItem('jm-god')==='1'}catch(e){}
 $('god').onchange=()=>{god=canGod()&&$('god').checked;godPref=god;try{localStorage.setItem('jm-god',god?'1':'0')}catch(e){}$('god').blur()};
+// ---- online play: rooms are saved for 60 minutes; join by code or from the browse list
+let touchTimer=null;
+async function loadRooms(){const box=$('roomList');if(!box)return;
+ if(!user){box.innerHTML='<div class="room empty">Sign in to see rooms.</div>';return}
+ box.innerHTML='<div class="room empty">Loading rooms...</div>';
+ const since=new Date(Date.now()-60*60000).toISOString();
+ let r;try{r=await getSB().from('rooms').select('code,mode,map,kills,host_name,last_active').gte('last_active',since).order('last_active',{ascending:false})}catch(e){box.innerHTML='<div class="room empty">Could not load rooms.</div>';return}
+ if(r.error){box.innerHTML='<div class="room empty">'+esc(r.error.message)+'</div>';return}
+ const rows=r.data||[];
+ box.innerHTML=rows.length?rows.map(x=>{const mins=Math.max(0,Math.round((Date.now()-new Date(x.last_active))/60000));
+  return '<div class="room"><div class="ri"><b>'+esc(x.code)+'</b><span>'+esc((MAPS.find(m=>m.id===x.map)||MAPS[0]).n)+' / '+(x.mode==='tdm'?'Team deathmatch':'Free for all')+' / to '+x.kills+' / host '+esc(x.host_name)+' / active '+(mins<1?'just now':mins+' min ago')+'</span></div><button class="chip" data-code="'+esc(x.code)+'">Join</button></div>'}).join('')
+  :'<div class="room empty">No rooms in the last hour. Type a code to create one.</div>';
+ box.querySelectorAll('button[data-code]').forEach(btn=>btn.onclick=()=>{$('roomIn').value=btn.dataset.code;enterFS();startOnline()})}
+function startOnline(){const msg=$('msg');
+ if(!window.supabase){msg.textContent='Online play needs an internet connection.';return}
+ if(!user){msg.textContent='Sign in with an account (not guest) to play online.';return}
+ if($('gm').value==='surv'){msg.textContent='Survival waves is solo only. Pick another mode.';return}
+ const code=($('roomIn').value||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12);
+ if(code.length<2){msg.textContent='Type a room code (2 to 12 letters or numbers).';return}
+ const sc=getSB(),mode=$('gm').value,map=$('mp').value;
+ msg.textContent='Opening room '+code+'...';$('play').disabled=true;
+ sc.rpc('open_room',{p_code:code,p_mode:mode,p_map:map,p_kills:mode==='tdm'?20:15}).then(r=>{
+  if(r.error){$('play').disabled=false;msg.textContent=r.error.message;return}
+  const row=r.data;$('gm').value=row.mode;$('mp').value=row.map;syncTiles();
+  const cfg={mode:row.mode,map:row.map,kills:row.kills,powers:true,airdrop:true};
+  const c2=sc.channel('jm-'+row.code+'-'+row.mode+'-'+row.map,{config:{broadcast:{self:false}}});
+  c2.on('broadcast',{event:'e'},m=>onMsg(m.payload));
+  subscribeWithTimeout(c2,10000).then(st=>{
+   if(st==='SUBSCRIBED'){ch=c2;online=true;roomCode=row.code;msg.textContent='';
+    if(touchTimer)clearInterval(touchTimer);touchTimer=setInterval(()=>{try{sc.rpc('touch_room',{p_code:row.code})}catch(e){}},5*60000);
+    beginMatch(true,cfg,+$('tm').value||0)}
+   else{try{sc.removeChannel(c2)}catch(e){};msg.textContent=st==='TIMEOUT'?'The server did not answer. Check your connection and try again.':'Could not join'+(lastSubErr?' ('+lastSubErr+')':'')+'.'}
+   $('play').disabled=false})}).catch(()=>{$('play').disabled=false;msg.textContent='Could not open the room. Check your connection.'})}
+$('rRefresh').onclick=loadRooms;
 // ---- connection check (shows exactly which step fails)
 async function runDiag(){const out=[],log=t=>{out.push(t);$('diag').textContent=out.join('\n')};$('diag').hidden=false;
  log('1. Page loaded from: '+location.href.split('#')[0]);
