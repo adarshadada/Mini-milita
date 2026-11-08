@@ -75,7 +75,11 @@ dash:{n:'Elastic Dash',cd:150,price:2000,d:'Snap forward in the direction you ai
 sling:{n:'Sky Sling',cd:200,price:1500,d:'Spring yourself high into the air.'},
 armor:{n:'Bounce Armor',cd:600,price:3500,d:'Take 70% less damage for 5 seconds.'}};
 let ARMS=[],FT=[],BN={t:'',l:0};const ft=(x,y,t,c)=>FT.push({x,y,t,c,l:60}),banner=t=>{BN.t=t;BN.l=120};
-function usePower(o){if(!o||o.dead||!o.pw||o.pcd>0||state!=='play'||!POWERS)return;o.pcd=PW[o.pw].cd;firePower(o,o.pw);
+function usePower(o){if(!o||o.dead||state!=='play')return;
+if(o===me){if(!o.pw){FT.length=0;ft(o.x+9,o.y-14,'No power equipped. Get one in Shop, then Powers.','#ffb0a0');return}
+ if(!POWERS){FT.length=0;ft(o.x+9,o.y-14,'Powers are off in this room','#ffb0a0');return}
+ if(o.pcd>0){FT.length=0;ft(o.x+9,o.y-14,'Power ready in '+Math.ceil(o.pcd/60)+'s','#ffd54a');return}}
+if(!o.pw||o.pcd>0||!POWERS)return;o.pcd=PW[o.pw].cd;firePower(o,o.pw);
 if(online&&o===me)send({t:'pw',id:myId,k:o.pw,x:+o.x.toFixed(1),y:+o.y.toFixed(1),a:+o.aim.toFixed(3)})}
 function firePower(o,k){const a=o.aim,ca=Math.cos(a),sa=Math.sin(a),ox=o.x+9,oy=o.y+14;
 if(k==='jab'){let ex=ox,ey=oy,t=null;for(let i=0;i<70&&!t;i++){ex+=ca*8;ey+=sa*8;
@@ -252,14 +256,15 @@ for(const p of PK)if(p.k==='ammo'&&!p.t){g.fillStyle='#ffcf4a';g.fillRect(bx+p.x
 for(const o of PL)if(!o.dead){g.fillStyle=o===me?'#fff':o.col;g.fillRect(bx+o.x*k-1.5,8+o.y*k-1.5,3,3)}
 g.strokeStyle='#ffffff55';g.lineWidth=1;g.strokeRect(bx+cam.x*k,8+cam.y*k,VW*k,VH*k);
 const sec=Math.floor(T/60);g.fillStyle='#ffffffb0';g.font='bold 11px sans-serif';g.textAlign='center';g.fillText(Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'),W/2,8+bh+15);
-const w=cw(me),d=WP[w.k],pc=me.pw?PW[me.pw]:null,dh=54,dy=H-dh-10,gw=76,ww=small?190:236,pw2=pc?118:0,gap=8,tot=gw+gap+ww+(pc?gap+pw2:0);let dx=W/2-tot/2;
+const w=cw(me),d=WP[w.k],pc=me.pw?PW[me.pw]:null,dh=54,dy=H-dh-10,gw=76,ww=small?190:236,pw2=118,gap=8,tot=gw+gap+ww+gap+pw2;let dx=W/2-tot/2;
 if(god){rr(W/2-48,dy-30,96,22,8,PN);g.fillStyle='#7fe3ff';g.font='bold 11px sans-serif';g.textAlign='center';g.fillText('UNKILLABLE',W/2,dy-15)}
 if(!isAdmin()&&tempLeft()>0){const tl=Math.ceil(tempLeft());rr(W/2-62,dy-56,124,22,8,PN);g.fillStyle='#ffd54a';g.font='bold 11px sans-serif';g.textAlign='center';g.fillText('TEMP ADMIN '+Math.floor(tl/60)+':'+String(tl%60).padStart(2,'0'),W/2,dy-41)}
 rr(dx,dy,gw,dh,14,PN);drawGrenade(g,dx+24,dy+28,1.2,0);g.fillStyle='#fff';g.font='bold 17px sans-serif';g.textAlign='left';g.fillText('x '+me.gren,dx+43,dy+34);
 dx+=gw+gap;rr(dx,dy,ww,dh,14,PN);drawGunIcon(w.k,dx+31,dy+25,1.1);g.textAlign='left';g.font='bold 11px sans-serif';g.fillStyle='#d8c88a';g.fillText(d.n,dx+64,dy+19);
 g.textAlign='right';g.font='bold 26px sans-serif';g.fillStyle=me.rl>0?'#ff9a2e':w.ammo<=Math.max(2,d.mag*.2)?'#ff6a5a':'#fff';g.fillText(me.rl>0?'..':w.ammo,dx+ww-54,dy+31);g.font='13px sans-serif';g.fillStyle='#cfc79f';g.fillText('/ '+w.res,dx+ww-12,dy+31);
 if(me.rl>0)bar(dx+64,dy+38,ww-78,7,1-me.rl/d.rl,'#ff9a2e','#ffd45a');else bar(dx+64,dy+38,ww-78,7,w.ammo/d.mag,'#cfc79f','#ffffff');
-if(pc){dx+=ww+gap;rr(dx,dy,pw2,dh,14,PN);const cx=dx+31,cy=dy+27,cd=me.pcd>0;g.fillStyle='#0006';g.beginPath();g.arc(cx,cy,20,0,7);g.fill();
+dx+=ww+gap;rr(dx,dy,pw2,dh,14,PN);if(!pc){g.textAlign='left';g.fillStyle='#d8c88a';g.font='bold 11px sans-serif';g.fillText('No power',dx+12,dy+23);g.fillStyle='#cfc79f';g.font='10px sans-serif';g.fillText('Equip one in Shop',dx+12,dy+39)}
+if(pc){const cx=dx+31,cy=dy+27,cd=me.pcd>0;g.fillStyle='#0006';g.beginPath();g.arc(cx,cy,20,0,7);g.fill();
 g.strokeStyle=cd?'#ff9a2e':'#7fe3ff';g.lineWidth=3;g.beginPath();g.arc(cx,cy,20,-Math.PI/2,-Math.PI/2+Math.PI*2*(cd?1-me.pcd/pc.cd:1));g.stroke();
 drawPowerIcon(me.pw,cx,cy,cd?'#ffb870':'#bff2ff');g.textAlign='left';g.font='bold 11px sans-serif';g.fillStyle='#d8c88a';g.fillText(pc.n.split(' ')[1]||pc.n,dx+58,dy+23);g.font='11px sans-serif';g.fillStyle=cd?'#ff9a2e':'#7fe3ff';g.fillText(cd?Math.ceil(me.pcd/60)+'s':touchUse?'Ready':'Press E',dx+58,dy+39)}
 if(BN.l>0){g.globalAlpha=Math.min(1,BN.l/30);g.textAlign='center';g.font='bold 24px sans-serif';g.lineWidth=4;g.strokeStyle='#000b';g.strokeText(BN.t,W/2,H*.4);g.fillStyle='#fff';g.fillText(BN.t,W/2,H*.4);g.globalAlpha=1}
@@ -347,20 +352,27 @@ const rndId=()=>Math.random().toString(36).slice(2,8);
 const defaultCfg=()=>({mode:'ffa',map:'high',kills:15,powers:true,airdrop:true,max:8});
 function setMsg(t){$('msg').textContent=t}
 function setBusy(v){$('mkRoom').disabled=v;$('qp').disabled=v}
+let pendingJoin=(location.hash.match(/room=([a-z0-9]{4,20})/i)||[])[1]||null,lobbyErr='';
+function subscribeWithTimeout(ch,ms){return new Promise(res=>{let done=false;const t=setTimeout(()=>{if(!done){done=true;res('TIMEOUT')}},ms);
+ ch.subscribe(st=>{if(done)return;if(st==='SUBSCRIBED'||st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){done=true;clearTimeout(t);res(st)}})})}
 function lobbyJoin(){if(lobbyReady)return Promise.resolve(true);if(lobbyPending)return lobbyPending;const sc=getSB();if(!sc||!user)return Promise.resolve(false);
- lobby=sc.channel('jm-lobby',{config:{presence:{key:myId}}});lobby.on('presence',{event:'sync'},()=>renderRooms());
- lobbyPending=new Promise(res=>{let done=false;lobby.subscribe(st=>{if(done)return;if(st==='SUBSCRIBED'){done=true;lobbyReady=true;res(true);renderRooms()}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){done=true;lobbyPending=null;res(false)}})});
+ lobbyErr='';lobby=sc.channel('jm-lobby',{config:{presence:{key:myId}}});lobby.on('presence',{event:'sync'},()=>renderRooms());
+ lobbyPending=subscribeWithTimeout(lobby,10000).then(st=>{if(st==='SUBSCRIBED'){lobbyReady=true;renderRooms();return true}
+  lobbyErr=st==='TIMEOUT'?'The online service did not respond.':'Supabase Realtime rejected the lobby. Check that Realtime is enabled for your project.';lobbyPending=null;renderRooms();return false});
  return lobbyPending}
 function lobbyConnect(){lobbyJoin()}
 function lobbyLeave(){if(RM)return;if(lobby){try{getSB().removeChannel(lobby)}catch(e){}}lobby=null;lobbyReady=false;lobbyPending=null}
 function roomsNow(){const st=lobbyReady&&lobby?lobby.presenceState():{},out=[];for(const k in st)for(const m of (st[k]||[])){if(m&&m.room)out.push(m)}return out.sort((a,b)=>(b.count||0)-(a.count||0))}
 function renderRooms(){const box=$('roomList');if(!box)return;
  if(!user){box.innerHTML='<div class="room empty">Sign in with an account to play online.</div>';return}
+ if(!lobbyReady){box.innerHTML='<div class="room empty">'+(lobbyErr?esc(lobbyErr)+' You can still play with invite links.':'Connecting to the lobby...')+'</div>';return}
  const rs=roomsNow();
  box.innerHTML=rs.length?rs.map(r=>{const full=r.count>=r.max,mp=(MAPS.find(m=>m.id===r.map)||MAPS[0]).n;
   return '<div class="room"><div class="ri"><b>'+esc(r.name)+'</b><span>'+esc(mp)+' / '+(r.mode==='tdm'?'Team deathmatch':'Free for all')+' / first to '+r.kills+'</span></div><span class="cnt">'+r.count+'/'+r.max+'</span><button class="chip" data-id="'+esc(r.room)+'"'+(full?' disabled':'')+'>'+(full?'Full':'Join')+'</button></div>'}).join('')
-  :'<div class="room empty">No open rooms yet. Create one and set the rules inside.</div>';
+  :'<div class="room empty">No open rooms yet. Create one, then send the invite link to friends.</div>';
  box.querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>{const r=rs.find(x=>x.room===b.dataset.id);if(r){enterFS();openRoom(r.room,r.name,false)}})}
+function inviteUrl(id){return location.href.split('#')[0]+'#room='+id}
+function joinPending(){if(!pendingJoin||!user)return;const id=pendingJoin;pendingJoin=null;setMode('online');setTimeout(()=>openRoom(id,'Room',false),0)}
 function createRoom(){enterFS();if(!user){setMsg('Sign in with an account (not guest) to play online.');return}openRoom(rndId(),(user.username+"'s room").slice(0,20),true,defaultCfg())}
 function quickPlay(){enterFS();const rs=roomsNow().filter(r=>r.count<r.max);if(rs.length)openRoom(rs[0].room,rs[0].name,false);else createRoom()}
 async function openRoom(id,name,isHost,cfg){
@@ -368,19 +380,22 @@ async function openRoom(id,name,isHost,cfg){
  if(!user){setMsg('Sign in with an account (not guest) to play online.');return}
  if(RM)closeRoom();
  setMsg((isHost?'Creating ':'Joining ')+name+'...');setBusy(true);
- const lobbyOk=await lobbyJoin();
+ lobbyJoin();
  const c2=getSB().channel('jm-room-'+id,{config:{broadcast:{self:false},presence:{key:myId}}});
  const R={id,name,host:isHost,ch:c2,cfg:Object.assign(defaultCfg(),cfg||{}),members:[],sawHost:false,team:-1};
  RM=R;roomCode=name;
  c2.on('presence',{event:'sync'},roomSync);
  c2.on('broadcast',{event:'e'},m=>onMsg(m.payload));
  c2.on('broadcast',{event:'r'},m=>roomMsg(m.payload));
- const ok=await new Promise(res=>{let done=false;c2.subscribe(st=>{if(done)return;if(st==='SUBSCRIBED'){done=true;res(true)}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){done=true;res(false)}})});
+ const st=await subscribeWithTimeout(c2,10000);
  if(RM!==R)return;
- if(!ok){closeRoom();setBusy(false);setMsg('Could not connect. Check your connection and try again.');return}
+ if(st!=='SUBSCRIBED'){closeRoom();setBusy(false);setMsg(st==='TIMEOUT'?'The online service did not respond. Check your connection and try again.':'Could not open the room. Check that Supabase Realtime is enabled for your project.');return}
  ch=c2;online=true;R.team=pickTeam(R);
  try{await c2.track(myPayload())}catch(e){}
- setBusy(false);roomSync();showRoom();setMsg(isHost&&!lobbyOk?'Room is open, but the lobby list is offline.':'')}
+ setBusy(false);roomSync();showRoom();
+ if(location.hash)history.replaceState(null,'',location.pathname+location.search);
+ if(isHost)setMsg(lobbyReady?'':'Room is open, but the room list is offline. Share the invite link instead.');
+ else setTimeout(()=>{if(RM===R&&!R.sawHost)leaveRoom('No host is in that room right now. Ask them to open it and send you the link again.')},7000)}
 function pickTeam(R){if(R.cfg.mode!=='tdm')return -1;const c=[0,0];for(const m of R.members)if(m.key!==myId&&(m.team===0||m.team===1))c[m.team]++;return c[0]<=c[1]?0:1}
 function myPayload(){const R=RM,p={name:($('name').value.trim()||'Soldier').slice(0,12),team:R.team};if(R.host){p.host=true;p.cfg=R.cfg;p.roomName=R.name}return p}
 function roomSync(){const R=RM;if(!R||!R.ch)return;const st=R.ch.presenceState(),mem=[];let hostHere=false,cfg=null,rn=null;
@@ -408,7 +423,7 @@ function toMenu(){leaveRoom('')}
 function showRoom(){state='room';$('menu').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('room').hidden=false;renderRoom()}
 function backToRoom(){if(!RM){toMenu();return}voiceLeave(true);resetMatch();$('end').hidden=true;$('tools').hidden=true;$('vcSw').hidden=true;showRoom()}
 function renderRoom(){const R=RM;if(!R||$('room').hidden)return;
- $('rName').textContent=R.name;
+ $('rName').textContent=R.name;$('rLink').value=inviteUrl(R.id);
  $('rSub').textContent=R.host?'You are the host. Set the rules, then start when your friends are in.':'The host sets the rules. Pick a team if the mode has teams.';
  const mem=R.members.slice().sort((a,b)=>(b.host?1:0)-(a.host?1:0));
  $('rCount').textContent=mem.length+'/'+R.cfg.max;
@@ -433,6 +448,10 @@ $('rRename').onchange=()=>{if(RM&&RM.host){RM.name=($('rRename').value.trim()||R
 $('tBlue').onclick=()=>setRoomTeam(0);$('tRed').onclick=()=>setRoomTeam(1);
 $('rStart').onclick=()=>{const R=RM;if(!R||!R.host)return;const cfg=Object.assign({},R.cfg);try{R.ch.send({type:'broadcast',event:'r',payload:{t:'start',cfg}})}catch(e){}startOnline(cfg)};
 $('rLeave').onclick=()=>leaveRoom('');
+$('rCopy').onclick=async()=>{const t=$('rLink').value;let ok=false;
+ if(navigator.share){try{await navigator.share({title:'Jetpack Militia',text:'Join my room',url:t});return}catch(e){}}
+ try{await navigator.clipboard.writeText(t);ok=true}catch(e){$('rLink').select();try{ok=document.execCommand('copy')}catch(x){}}
+ $('rCopy').textContent=ok?'Link copied':'Press Ctrl+C to copy';setTimeout(()=>$('rCopy').textContent='Copy invite link',1600)};
 function setMode(m){mode=m;$('solTiles').hidden=m==='online';$('tSolo').classList.toggle('on',m==='solo');$('tOn').classList.toggle('on',m==='online');$('soloOpts').hidden=m!=='solo';$('onOpts').hidden=m==='solo';$('play').hidden=m!=='solo';$('msg').textContent='';if(m==='online'&&$('gm').value==='surv')pickTile('gm','ffa');if(m==='online'){lobbyConnect();renderRooms()}else lobbyLeave()}
 $('tSolo').onclick=()=>setMode('solo');$('tOn').onclick=()=>setMode('online');
 $('play').onclick=()=>{enterFS();beginMatch(false)};$('mkRoom').onclick=createRoom;$('qp').onclick=quickPlay;
@@ -537,7 +556,7 @@ async function loadProfile(session){const r=await getSB().from('profiles').selec
 if(r.error||!r.data){$('amsg').textContent='Profile not found. Run supabase.sql in your Supabase project first.';return false}setUser(r.data);return true}
 function showMenu(){$('auth').hidden=true;$('menu').hidden=false;
 $('who').textContent=user?(user.is_admin?'Admin account':'Signed in'):'Progress saves on this device only';
-$('admBtn').hidden=!isAdmin();$('outBtn').textContent=user?'Sign out':'Sign in';$('name').readOnly=!!user;if(user)$('name').value=user.username;upLabel()}
+$('admBtn').hidden=!isAdmin();$('outBtn').textContent=user?'Sign out':'Sign in';$('name').readOnly=!!user;if(user)$('name').value=user.username;upLabel();joinPending()}
 async function doAuth(signup){const sc=getSB(),am=t=>$('amsg').textContent=t;if(!sc){am('Signing in needs an internet connection.');return}
 const raw=$('aemail').value.trim(),isMail=raw.includes('@'),name=isMail?'':raw.replace(/[^A-Za-z0-9_]/g,'').slice(0,12),pw=$('apass').value;
 if(!isMail&&name.length<3){am('A username needs 3 to 12 letters, numbers or underscores.');return}
@@ -590,7 +609,7 @@ $('codeBox').querySelectorAll('[data-c]').forEach(d=>d.onclick=()=>{$('codeIn').
 $('admMk').onclick=async()=>{const cr=Math.floor(+$('admCr').value),u=Math.floor(+$('admUses').value)||1,m=t=>$('admMsg').textContent=t;if(!(cr>0)){m('Enter credits above 0.');return}
 const r=await getSB().rpc('admin_create_code',{p_code:$('admCode').value.trim()||null,p_credits:cr,p_max_uses:u});
 m(r.error?r.error.message:'Created code '+r.data+' for '+cr+' credits, '+u+' use(s).');if(!r.error)$('admCode').value='';loadCodes()};
-(async()=>{try{const sc=getSB();if(sc){const r=await sc.auth.getSession();if(r.data&&r.data.session&&await loadProfile(r.data.session)){showMenu();return}}}catch(e){}$('auth').hidden=false})();
+(async()=>{try{const sc=getSB();if(sc){const r=await sc.auth.getSession();if(r.data&&r.data.session&&await loadProfile(r.data.session)){showMenu();return}}}catch(e){}$('auth').hidden=false;if(pendingJoin)$('amsg').textContent='Sign in to join the invited room.'})();
 // ---- menu tiles
 const MODES=[['ffa','Free for all','Everyone for themselves'],['tdm','Team deathmatch','Blue against Red'],['surv','Survival waves','Solo. Hold out as long as you can']];
 function syncTiles(){[['gm','gmTiles'],['mp','mpTiles']].forEach(([sel,box])=>$(box).querySelectorAll('.tile').forEach(b=>b.classList.toggle('on',b.dataset.v===$(sel).value)))}

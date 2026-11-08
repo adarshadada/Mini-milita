@@ -108,3 +108,5 @@ canvas.av{width:64px;height:96px;align-self:center}
 #rPlayers .pl{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:default}
 #rPlayers .pl:hover{background:none}
 @media (max-width:760px){.rmain{grid-template-columns:1fr}}
+
+.invite{display:flex;gap:8px;margin-top:10px;align-items:center}.invite input{flex:1;min-width:0;font-size:.8rem;color:var(--dim)}.invite button{white-space:nowrap;padding:8px 12px}
