@@ -21,9 +21,9 @@
 <section id="menu" hidden><div class="mwrap">
 <header class="mtop"><svg class="logo" viewBox="0 0 320 120" role="img" aria-label="Jetpack Militia"><use href="#logo"/></svg>
 <div class="acct"><canvas id="chipAv" width="64" height="96"></canvas>
-<div class="ainfo"><b id="chipName">Guest</b><span id="who"></span></div>
+<canvas id="chipRk" width="28" height="28"></canvas><div class="ainfo"><b id="chipName">Guest</b><span id="chipRank"></span><div class="xpbar"><i id="xpFill"></i></div></div><span id="who" hidden></span>
 <span class="pill" id="chipCr"></span>
-<button id="upBtn" class="chip">Shop</button><button id="admBtn" class="chip" hidden>Admin panel</button><button id="outBtn" class="chip">Sign in</button></div></header>
+<button id="upBtn" class="chip">Shop</button><button id="admBtn" class="chip" hidden>Mr God panel</button><button id="outBtn" class="chip">Sign in</button></div></header>
 <div class="mmain">
 <div class="panel mcol">
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
@@ -40,9 +40,11 @@
 <label>Kills to win<select id="kt"><option>10</option><option selected>15</option><option>25</option></select></label>
 </div>
 <div id="onOpts" hidden>
-<label>Room code<input id="room" maxlength="12" placeholder="lobby" autocomplete="off"></label>
-<label id="tmRow" hidden>Your team<select id="tm"><option value="0">Blue</option><option value="1">Red</option></select></label>
-<p class="note">Friends who enter the same room code, map and game mode play together. Use the Voice switch during a match to talk (needs a microphone).</p>
+<div class="roomhead"><h3>Rooms</h3><button id="qp" class="chip">Quick play</button></div>
+<div id="roomList" class="rooms"></div>
+<button id="mkRoom" class="pri">Create room</button>
+<select id="tm" hidden><option value="0">Blue</option><option value="1">Red</option></select>
+<p class="note">Pick a mode and map on the left, then create a room. Tap Join on any room to play with others. Use the Voice switch in a match to talk (needs a microphone).</p>
 </div>
 <button id="play">Deploy</button>
 <p id="msg" role="status"></p>
@@ -56,18 +58,22 @@
 <div class="tabs" id="shopTabs"><button data-t="up" class="on">Upgrades</button><button data-t="gun">Guns</button><button data-t="av">Avatars</button><button data-t="pw">Powers</button></div>
 <div class="rrow"><input id="codeIn" placeholder="Enter a code" maxlength="20" autocomplete="off"><button id="redeem" class="pri">Redeem</button></div>
 <p id="umsg" class="note"></p><div id="upgList"></div><button id="upBack" class="ghost">Back</button></div></section>
-<section id="adm" hidden><div class="card wide"><div class="uhead"><h1>Admin panel</h1><div class="credits">Unlimited credits</div></div>
-<p class="note">Send credits to any player. Click a player below to fill in their email.</p>
-<label>Player username or email<input id="admTo" type="text" autocomplete="off" autocapitalize="none"></label>
-<label>Amount<input id="admAmt" type="number" min="1" value="500"></label>
-<button id="admSend" class="pri">Send credits</button><p id="admMsg" class="note"></p>
-<div id="plistBox"></div>
-<h2>Create a redeem code</h2>
+<section id="adm" hidden><div class="card wide">
+<div class="uhead"><h1>Mr God panel</h1><div class="credits">Unlimited power</div></div>
+<div class="admgrid">
+<div><h3>Pick a player</h3><div id="plistBox"></div></div>
+<div><h3>Gift to <b id="admSel">nobody yet</b></h3>
+<div class="tabs gt" id="gTabs"><button data-g="cr" class="on">Credits</button><button data-g="gun">Guns</button><button data-g="av">Skins</button><button data-g="up">Upgrades</button><button data-g="ta">Temp admin</button></div>
+<div id="gBody" class="chips"></div>
+<p class="note">Temp admin lasts for the time you pick and only unlocks the Unkillable switch. It ends on its own, or tap Revoke now.</p>
+<p id="admMsg" class="note"></p></div></div>
+<h2>Redeem codes</h2>
 <label>Credits per use<input id="admCr" type="number" min="1" value="250"></label>
 <label>Number of uses<input id="admUses" type="number" min="1" value="1"></label>
 <label>Custom code (optional)<input id="admCode" maxlength="20" autocomplete="off"></label>
 <button id="admMk" class="pri">Create code</button>
-<div id="codeBox"></div><button id="admBack" class="ghost">Back</button></div></section>
+<div id="codeBox"></div>
+<button id="admBack" class="ghost">Back</button></div></section>
 <div id="rot">Rotate your phone to landscape</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
