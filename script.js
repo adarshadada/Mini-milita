@@ -75,7 +75,7 @@ dash:{n:'Elastic Dash',cd:150,price:2000,d:'Snap forward in the direction you ai
 sling:{n:'Sky Sling',cd:200,price:1500,d:'Spring yourself high into the air.'},
 armor:{n:'Bounce Armor',cd:600,price:3500,d:'Take 70% less damage for 5 seconds.'}};
 let ARMS=[],FT=[],BN={t:'',l:0};const ft=(x,y,t,c)=>FT.push({x,y,t,c,l:60}),banner=t=>{BN.t=t;BN.l=120};
-function usePower(o){if(!o||o.dead||!o.pw||o.pcd>0||state!=='play')return;o.pcd=PW[o.pw].cd;firePower(o,o.pw);
+function usePower(o){if(!o||o.dead||!o.pw||o.pcd>0||state!=='play'||!POWERS)return;o.pcd=PW[o.pw].cd;firePower(o,o.pw);
 if(online&&o===me)send({t:'pw',id:myId,k:o.pw,x:+o.x.toFixed(1),y:+o.y.toFixed(1),a:+o.aim.toFixed(3)})}
 function firePower(o,k){const a=o.aim,ca=Math.cos(a),sa=Math.sin(a),ox=o.x+9,oy=o.y+14;
 if(k==='jab'){let ex=ox,ey=oy,t=null;for(let i=0;i<70&&!t;i++){ex+=ca*8;ey+=sa*8;
@@ -117,7 +117,7 @@ if(p.k==='med'){if(q.hp>=q.mh)return 0;q.hp=Math.min(q.mh,q.hp+50);return 1}
 if(p.k==='gren'){if(q.gren>=5)return 0;q.gren=Math.min(5,q.gren+2);return 1}
 const h=q.wp.find(w=>w.k===p.k);if(h){h.res+=WP[p.k].mag*2}else if(q.wp.length<2){q.wp.push(gun(p.k));q.cur=1;q.rl=0}else{q.wp[q.cur]=gun(p.k);q.rl=0}
 if(q===me)snd(500,.1,'square',.04,900);return 1}
-function tick(){T++;{const sl=Math.floor(Date.now()/20000);if(sl!==lastSlot){if(lastSlot>=0)spawnAirdrop(sl);lastSlot=sl}}if(god&&!canGod()){god=false;$('god').checked=false;$('godSw').hidden=true;addKF('Admin power expired')}
+function tick(){T++;{const sl=Math.floor(Date.now()/20000);if(sl!==lastSlot){if(lastSlot>=0&&AIRDROP)spawnAirdrop(sl);lastSlot=sl}}if(god&&!canGod()){god=false;$('god').checked=false;$('godSw').hidden=true;addKF('Admin power expired')}
 if(god&&me&&!me.dead)me.hp=me.mh;pctl();
 for(const o of PL){if(o.remote){remoteStep(o);continue}if(o.dead){if(!SURV&&--o.rs<=0)spawn(o);continue}if(o.bot)ai(o);upd(o)}
 for(const b of B){for(let s=0;s<3&&b.l>0;s++){b.x+=b.vx/3;b.y+=b.vy/3;if(b.x<0||b.x>WW||b.y>WH||b.y<-100){b.l=0;break}
@@ -294,7 +294,7 @@ else if(p.t==='g'){const o=PL.find(q=>q.id===p.id);if(o)G.push({x:p.x,y:p.y,vx:p
 function netTick(){voiceTick();if(online){if(T%6===0)sendState();const now=performance.now();
 PL=PL.filter(o=>{if(o.remote&&now-o.seen>5000){addKF(o.name+' left');vclose(o.id);return false}return true})}
 checkWin()}
-function leave(){voiceLeave(true);online=false;if(lobby&&lobby.state==='joined'){try{lobby.untrack()}catch(e){}}if(ch&&sb){try{sb.removeChannel(ch)}catch(e){}}ch=null}
+function leave(){closeRoom()}
 // ---- voice chat (WebRTC peer-to-peer; signalling goes over the same Supabase channel)
 const VOICE={on:false,stream:null,pcs:{},aud:{},muted:false,talk:{},me:0,an:{},q:[],qt:null,ac:null};
 const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
@@ -327,49 +327,116 @@ if(f){try{const r=f.call(e,{navigationUI:'hide'});r&&r.catch&&r.catch(()=>{})}ca
 try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(x){}}
 // ---- flow
 const COLS=['#d9382c','#2f9e44','#e8890c','#8e44ad','#16a2b8','#c2a21a','#2f6fe0'];let mode='solo';
-function beginMatch(isOnline){const name=($('name').value.trim()||'Soldier').slice(0,12);try{localStorage.setItem('jm-name',name)}catch(e){}
-online=isOnline;loadMap($('mp').value);SURV=$('gm').value==='surv';TEAMS=$('gm').value==='tdm'||SURV;TARGET=isOnline?(TEAMS?20:15):+$('kt').value;DIFF=D[$('df').value];
-const L=UP.lv,mt=TEAMS?(isOnline?+$('tm').value:0):-1;
+function beginMatch(isOnline,cfg,team){if(!cfg)cfg={mode:$('gm').value,map:$('mp').value,kills:+$('kt').value,powers:true,airdrop:true};const name=($('name').value.trim()||'Soldier').slice(0,12);try{localStorage.setItem('jm-name',name)}catch(e){}
+online=isOnline;loadMap(cfg.map);SURV=cfg.mode==='surv';TEAMS=cfg.mode==='tdm'||SURV;TARGET=cfg.kills;POWERS=cfg.powers!==false;AIRDROP=cfg.airdrop!==false;DIFF=D[$('df').value];
+const L=UP.lv,mt=TEAMS?(isOnline?Math.max(0,team|0):0):-1;
 PL=[me=mk(name,0,TEAMS?TC[mt]:isOnline?COLS[parseInt(myId,36)%COLS.length]:'#2f6fe0')];
 Object.assign(me,{team:mt,mh:100+15*L.hp,mf:100+15*L.fuel,spd:1+.06*L.spd,dm:1+.06*L.dmg,rlm:1-.1*L.rl,g0:3+L.gren});
-const gk=owns('guns',INV.gun)?INV.gun:'';Object.assign(me,{pw:owns('powers',INV.power)?INV.power:'',lo:gk,av:Math.max(0,AV.findIndex(a=>a.id===INV.avatar&&owns('avatars',a.id)))});
+const gk=owns('guns',INV.gun)?INV.gun:'';Object.assign(me,{pw:POWERS&&owns('powers',INV.power)?INV.power:'',lo:gk,av:Math.max(0,AV.findIndex(a=>a.id===INV.avatar&&owns('avatars',a.id)))});
 const names=['Rex','Vex','Kilo','Nova','Zed'],cols=['#d9382c','#2f9e44','#e8890c','#8e44ad','#16a2b8'];
 if(!isOnline&&!SURV)for(let i=0;i<+$('nb').value;i++){const b=mk(names[i],1,TEAMS?TC[i%2?0:1]:cols[i]);b.team=TEAMS?(i%2?0:1):-1;b.lo=['ak','shotgun','ak','sniper','rocket'][i%5];b.av=(i*3+1)%AV.length;b.pw=['jab','rocket','','armor','jab'][i%5];PL.push(b)}
 B=[];G=[];P=[];EX=[];KF=[];PK=[];T=0;outShots=[];ARMS=[];FT=[];BN.l=0;lastSlot=-1;PL.forEach(spawn);if(SURV){wave=0;nextWave()}
 const pk=(x,y,i)=>PK.push({x,y,w:20,h:16,vx:0,vy:0,on:0,k:rk(i),seed:i,id:'h'+i,t:0});
 MAP.forEach((p,i)=>{if(i>0&&p[2]>=200)pk(p[0]+p[2]/2-10,p[1]-16,i)});MAPD.gp.forEach((q,i)=>pk(q[0],q[1],100+i));
 cam.x=clamp(me.x-VW/2,0,Math.max(0,WW-VW));cam.y=clamp(me.y-VH/2,0,WH-VH);
-$('menu').hidden=true;$('end').hidden=true;$('tools').hidden=false;god=canGod()&&godPref;$('godSw').hidden=!canGod();$('vcSw').hidden=!isOnline;$('god').checked=god;$('msg').textContent='';$('play').disabled=false;state='play';banner(SURV?'Survive':'Fight')}
-// ---- lobby: browse, join or create rooms (presence on one shared lobby channel)
-let lobby=null;
-function lobbyConnect(){if(lobby||!window.supabase||!user)return;const sc=getSB();if(!sc)return;
-lobby=sc.channel('jm-lobby',{config:{presence:{key:myId}}});lobby.on('presence',{event:'sync'},renderRooms).subscribe()}
-function lobbyLeave(){if(lobby&&state==='menu'){try{getSB().removeChannel(lobby)}catch(e){}lobby=null}}
-function roomsNow(){const st=lobby?lobby.presenceState():{},out={};for(const k in st)for(const m of st[k]){if(!m.room)continue;const r=out[m.room]||(out[m.room]={id:m.room,name:m.name,mode:m.mode,map:m.map,n:0,t:[0,0]});r.n++;if(m.team===0||m.team===1)r.t[m.team]++}return Object.values(out).sort((a,b)=>b.n-a.n)}
-function renderRooms(){const box=$('roomList');if(!box)return;
-if(!user){box.innerHTML='<div class="room empty">Sign in with an account to play online.</div>';return}
-const rs=roomsNow();
-box.innerHTML=rs.length?rs.map(r=>'<div class="room"><div class="ri"><b>'+esc(r.name)+'</b><span>'+esc((MAPS.find(m=>m.id===r.map)||MAPS[0]).n)+', '+(r.mode==='tdm'?'Team deathmatch':'Free for all')+'</span></div><span class="cnt">'+r.n+'/8</span><button class="chip" data-id="'+esc(r.id)+'"'+(r.n>=8?' disabled':'')+'>'+(r.n>=8?'Full':'Join')+'</button></div>').join(''):'<div class="room empty">No rooms yet. Create one or tap Quick play.</div>';
-box.querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>{const r=rs.find(x=>x.id===b.dataset.id);if(r){enterFS();connectRoom(r)}})}
+$('menu').hidden=true;$('room').hidden=true;$('end').hidden=true;$('tools').hidden=false;god=canGod()&&godPref;$('godSw').hidden=!canGod();$('vcSw').hidden=!isOnline;$('god').checked=god;$('msg').textContent='';$('play').disabled=false;state='play';banner(SURV?'Survive':'Fight')}
+// ---- rooms: browse, create, set the rules in a waiting room, then play together
+const RMODES=[['ffa','Free for all','Everyone for themselves'],['tdm','Team deathmatch','Blue against Red']];
+let RM=null,lobby=null,lobbyReady=false,lobbyPending=null,POWERS=true,AIRDROP=true;
+const rndId=()=>Math.random().toString(36).slice(2,8);
+const defaultCfg=()=>({mode:'ffa',map:'high',kills:15,powers:true,airdrop:true,max:8});
+function setMsg(t){$('msg').textContent=t}
 function setBusy(v){$('mkRoom').disabled=v;$('qp').disabled=v}
-function connectRoom(r){const msg=$('msg');if(!window.supabase){msg.textContent='Online play needs an internet connection.';return}
-if(!user){msg.textContent='Sign in with an account (not guest) to play online.';return}
-roomCode=r.name;msg.textContent='Joining '+r.name+'...';setBusy(true);
-pickTile('gm',r.mode);pickTile('mp',r.map);if(r.mode==='tdm'){const t=r.t||[0,0];$('tm').value=t[1]<t[0]?'1':'0'}
-try{sb=getSB();ch=sb.channel('jm-'+r.id,{config:{broadcast:{self:false}}});
-ch.on('broadcast',{event:'e'},m=>onMsg(m.payload)).subscribe(st=>{
-if(st==='SUBSCRIBED'&&state==='menu'){beginMatch(true);setBusy(false);trackRoom(r)}
-else if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&state==='menu'){msg.textContent='Could not connect. Check your connection and try again.';leave();setBusy(false)}
-else if((st==='CLOSED'||st==='CHANNEL_ERROR')&&state==='play'&&online)addKF('Connection lost')})
-}catch(e){msg.textContent='Could not connect.';setBusy(false);leave()}}
-function trackRoom(r,n){n=n||0;if(!lobby)return;if(lobby.state==='joined')lobby.track({room:r.id,name:r.name,mode:r.mode,map:r.map,team:me?me.team:-1,u:me?me.name:''});else if(n<12)setTimeout(()=>trackRoom(r,n+1),500)}
-function createRoom(){enterFS();connectRoom({id:Math.random().toString(36).slice(2,8),name:(user?user.username:'Player')+"'s room",mode:$('gm').value==='tdm'?'tdm':'ffa',map:$('mp').value,t:[0,0]})}
-function quickPlay(){const rs=roomsNow().filter(r=>r.n<8);if(rs.length){enterFS();connectRoom(rs[0])}else createRoom()}
-function toMenu(){leave();state='menu';PL=[];me=null;B=[];G=[];$('end').hidden=true;$('tools').hidden=true;$('menu').hidden=false;$('play').disabled=false;setBusy(false);if(mode==='online'){lobbyConnect();renderRooms()}}
-function setMode(m){mode=m;$('tSolo').classList.toggle('on',m==='solo');$('tOn').classList.toggle('on',m==='online');$('soloOpts').hidden=m!=='solo';$('onOpts').hidden=m==='solo';$('play').hidden=m!=='solo';$('msg').textContent='';if(m==='online'&&$('gm').value==='surv')pickTile('gm','ffa');if(m==='online'){lobbyConnect();renderRooms()}else lobbyLeave()}
+function lobbyJoin(){if(lobbyReady)return Promise.resolve(true);if(lobbyPending)return lobbyPending;const sc=getSB();if(!sc||!user)return Promise.resolve(false);
+ lobby=sc.channel('jm-lobby',{config:{presence:{key:myId}}});lobby.on('presence',{event:'sync'},()=>renderRooms());
+ lobbyPending=new Promise(res=>{let done=false;lobby.subscribe(st=>{if(done)return;if(st==='SUBSCRIBED'){done=true;lobbyReady=true;res(true);renderRooms()}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){done=true;lobbyPending=null;res(false)}})});
+ return lobbyPending}
+function lobbyConnect(){lobbyJoin()}
+function lobbyLeave(){if(RM)return;if(lobby){try{getSB().removeChannel(lobby)}catch(e){}}lobby=null;lobbyReady=false;lobbyPending=null}
+function roomsNow(){const st=lobbyReady&&lobby?lobby.presenceState():{},out=[];for(const k in st)for(const m of (st[k]||[])){if(m&&m.room)out.push(m)}return out.sort((a,b)=>(b.count||0)-(a.count||0))}
+function renderRooms(){const box=$('roomList');if(!box)return;
+ if(!user){box.innerHTML='<div class="room empty">Sign in with an account to play online.</div>';return}
+ const rs=roomsNow();
+ box.innerHTML=rs.length?rs.map(r=>{const full=r.count>=r.max,mp=(MAPS.find(m=>m.id===r.map)||MAPS[0]).n;
+  return '<div class="room"><div class="ri"><b>'+esc(r.name)+'</b><span>'+esc(mp)+' / '+(r.mode==='tdm'?'Team deathmatch':'Free for all')+' / first to '+r.kills+'</span></div><span class="cnt">'+r.count+'/'+r.max+'</span><button class="chip" data-id="'+esc(r.room)+'"'+(full?' disabled':'')+'>'+(full?'Full':'Join')+'</button></div>'}).join('')
+  :'<div class="room empty">No open rooms yet. Create one and set the rules inside.</div>';
+ box.querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>{const r=rs.find(x=>x.room===b.dataset.id);if(r){enterFS();openRoom(r.room,r.name,false)}})}
+function createRoom(){enterFS();if(!user){setMsg('Sign in with an account (not guest) to play online.');return}openRoom(rndId(),(user.username+"'s room").slice(0,20),true,defaultCfg())}
+function quickPlay(){enterFS();const rs=roomsNow().filter(r=>r.count<r.max);if(rs.length)openRoom(rs[0].room,rs[0].name,false);else createRoom()}
+async function openRoom(id,name,isHost,cfg){
+ if(!window.supabase){setMsg('Online play needs an internet connection.');return}
+ if(!user){setMsg('Sign in with an account (not guest) to play online.');return}
+ if(RM)closeRoom();
+ setMsg((isHost?'Creating ':'Joining ')+name+'...');setBusy(true);
+ const lobbyOk=await lobbyJoin();
+ const c2=getSB().channel('jm-room-'+id,{config:{broadcast:{self:false},presence:{key:myId}}});
+ const R={id,name,host:isHost,ch:c2,cfg:Object.assign(defaultCfg(),cfg||{}),members:[],sawHost:false,team:-1};
+ RM=R;roomCode=name;
+ c2.on('presence',{event:'sync'},roomSync);
+ c2.on('broadcast',{event:'e'},m=>onMsg(m.payload));
+ c2.on('broadcast',{event:'r'},m=>roomMsg(m.payload));
+ const ok=await new Promise(res=>{let done=false;c2.subscribe(st=>{if(done)return;if(st==='SUBSCRIBED'){done=true;res(true)}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){done=true;res(false)}})});
+ if(RM!==R)return;
+ if(!ok){closeRoom();setBusy(false);setMsg('Could not connect. Check your connection and try again.');return}
+ ch=c2;online=true;R.team=pickTeam(R);
+ try{await c2.track(myPayload())}catch(e){}
+ setBusy(false);roomSync();showRoom();setMsg(isHost&&!lobbyOk?'Room is open, but the lobby list is offline.':'')}
+function pickTeam(R){if(R.cfg.mode!=='tdm')return -1;const c=[0,0];for(const m of R.members)if(m.key!==myId&&(m.team===0||m.team===1))c[m.team]++;return c[0]<=c[1]?0:1}
+function myPayload(){const R=RM,p={name:($('name').value.trim()||'Soldier').slice(0,12),team:R.team};if(R.host){p.host=true;p.cfg=R.cfg;p.roomName=R.name}return p}
+function roomSync(){const R=RM;if(!R||!R.ch)return;const st=R.ch.presenceState(),mem=[];let hostHere=false,cfg=null,rn=null;
+ for(const k in st)for(const m of (st[k]||[])){const x=Object.assign({key:k},m);mem.push(x);if(x.host){hostHere=true;if(x.cfg)cfg=x.cfg;if(x.roomName)rn=x.roomName}}
+ R.members=mem;if(hostHere)R.sawHost=true;
+ if(!R.host){if(cfg)R.cfg=cfg;if(rn)R.name=rn;if(R.sawHost&&!hostHere){leaveRoom('The host left the room');return}}
+ else publishLobby();
+ if(state==='room')renderRoom()}
+function publishLobby(){const R=RM;if(!R||!R.host||!lobbyReady||!lobby)return;
+ try{lobby.track({room:R.id,name:R.name,mode:R.cfg.mode,map:R.cfg.map,kills:R.cfg.kills,count:Math.max(1,R.members.length),max:R.cfg.max})}catch(e){}}
+function roomCfg(patch){const R=RM;if(!R||!R.host)return;Object.assign(R.cfg,patch);if(patch.mode==='tdm'&&R.team<0)R.team=0;
+ try{R.ch.track(myPayload())}catch(e){}publishLobby();renderRoom()}
+function setRoomTeam(t){const R=RM;if(!R)return;R.team=t;try{R.ch.track(myPayload())}catch(e){}renderRoom()}
+function roomMsg(p){if(p&&p.t==='start'&&RM&&!RM.host)startOnline(p.cfg)}
+function startOnline(cfg){const R=RM;if(!R)return;enterFS();beginMatch(true,cfg,cfg.mode==='tdm'?Math.max(0,R.team):-1)}
+function resetMatch(){PL=[];me=null;B=[];G=[];P=[];EX=[];KF=[];PK=[];FT=[];ARMS=[];BN.l=0}
+function closeRoom(){const R=RM;if(!R)return;RM=null;
+ try{voiceLeave(true)}catch(e){}
+ try{if(R.host&&lobbyReady&&lobby)lobby.untrack()}catch(e){}
+ try{R.ch.untrack()}catch(e){}
+ try{getSB().removeChannel(R.ch)}catch(e){}
+ ch=null;online=false}
+function leaveRoom(msg){closeRoom();resetMatch();state='menu';$('room').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('menu').hidden=false;$('play').disabled=false;setBusy(false);setMsg(msg||'');if(mode==='online'){lobbyConnect();renderRooms()}}
+function toMenu(){leaveRoom('')}
+function showRoom(){state='room';$('menu').hidden=true;$('end').hidden=true;$('tools').hidden=true;$('room').hidden=false;renderRoom()}
+function backToRoom(){if(!RM){toMenu();return}voiceLeave(true);resetMatch();$('end').hidden=true;$('tools').hidden=true;$('vcSw').hidden=true;showRoom()}
+function renderRoom(){const R=RM;if(!R||$('room').hidden)return;
+ $('rName').textContent=R.name;
+ $('rSub').textContent=R.host?'You are the host. Set the rules, then start when your friends are in.':'The host sets the rules. Pick a team if the mode has teams.';
+ const mem=R.members.slice().sort((a,b)=>(b.host?1:0)-(a.host?1:0));
+ $('rCount').textContent=mem.length+'/'+R.cfg.max;
+ $('rPlayers').innerHTML=mem.length?mem.map(m=>'<div class="pl"><span>'+esc(m.name||'Soldier')+(m.key===myId?' (you)':'')+'</span><span>'+(m.host?'<i class="tag host">Host</i>':'')+(R.cfg.mode==='tdm'&&(m.team===0||m.team===1)?'<i class="tag t'+m.team+'">'+(m.team===0?'Blue':'Red')+'</i>':'')+'</span></div>').join(''):'<div class="pl"><span>Waiting for players</span></div>';
+ $('rTeams').hidden=R.cfg.mode!=='tdm';$('tBlue').classList.toggle('on',R.team===0);$('tRed').classList.toggle('on',R.team===1);
+ const h=R.host;$('rRename').disabled=!h;if(document.activeElement!==$('rRename'))$('rRename').value=R.name;
+ $('rKills').value=String(R.cfg.kills);$('rMax').value=String(R.cfg.max);$('rPow').checked=!!R.cfg.powers;$('rAir').checked=!!R.cfg.airdrop;
+ ['rKills','rMax','rPow','rAir'].forEach(i=>$(i).disabled=!h);
+ $('rMode').classList.toggle('locked',!h);$('rMap').classList.toggle('locked',!h);
+ $('rMode').querySelectorAll('.tile').forEach(b=>b.classList.toggle('on',b.dataset.v===R.cfg.mode));
+ $('rMap').querySelectorAll('.tile').forEach(b=>b.classList.toggle('on',b.dataset.v===R.cfg.map));
+ $('rStart').hidden=!h;$('rWait').textContent=h?'':'Waiting for the host to start the match.'}
+$('rMode').innerHTML=RMODES.map(m=>'<button class="tile" data-v="'+m[0]+'"><b>'+m[1]+'</b><span>'+m[2]+'</span></button>').join('');
+$('rMap').innerHTML=MAPS.map(m=>'<button class="tile map" data-v="'+m.id+'" style="--a:'+m.sky[0]+';--b:'+m.sky[1]+';--c:'+m.far[1]+'"><i></i><b>'+m.n+'</b></button>').join('');
+$('rMode').onclick=e=>{const b=e.target.closest('.tile');if(b&&RM&&RM.host)roomCfg({mode:b.dataset.v})};
+$('rMap').onclick=e=>{const b=e.target.closest('.tile');if(b&&RM&&RM.host)roomCfg({map:b.dataset.v})};
+$('rKills').onchange=()=>roomCfg({kills:+$('rKills').value});
+$('rMax').onchange=()=>roomCfg({max:+$('rMax').value});
+$('rPow').onchange=()=>roomCfg({powers:$('rPow').checked});
+$('rAir').onchange=()=>roomCfg({airdrop:$('rAir').checked});
+$('rRename').onchange=()=>{if(RM&&RM.host){RM.name=($('rRename').value.trim()||RM.name).slice(0,20);roomCfg({})}};
+$('tBlue').onclick=()=>setRoomTeam(0);$('tRed').onclick=()=>setRoomTeam(1);
+$('rStart').onclick=()=>{const R=RM;if(!R||!R.host)return;const cfg=Object.assign({},R.cfg);try{R.ch.send({type:'broadcast',event:'r',payload:{t:'start',cfg}})}catch(e){}startOnline(cfg)};
+$('rLeave').onclick=()=>leaveRoom('');
+function setMode(m){mode=m;$('solTiles').hidden=m==='online';$('tSolo').classList.toggle('on',m==='solo');$('tOn').classList.toggle('on',m==='online');$('soloOpts').hidden=m!=='solo';$('onOpts').hidden=m==='solo';$('play').hidden=m!=='solo';$('msg').textContent='';if(m==='online'&&$('gm').value==='surv')pickTile('gm','ffa');if(m==='online'){lobbyConnect();renderRooms()}else lobbyLeave()}
 $('tSolo').onclick=()=>setMode('solo');$('tOn').onclick=()=>setMode('online');
 $('play').onclick=()=>{enterFS();beginMatch(false)};$('mkRoom').onclick=createRoom;$('qp').onclick=quickPlay;
-$('fsBtn').onclick=toggleFS;$('fs').onclick=toggleFS;$('quit').onclick=toMenu;$('again').onclick=toMenu;
+$('fsBtn').onclick=toggleFS;$('fs').onclick=toggleFS;$('quit').onclick=()=>{if(RM&&online)backToRoom();else toMenu()};$('again').onclick=()=>{if(RM)backToRoom();else toMenu()};
 try{$('name').value=localStorage.getItem('jm-name')||''}catch(e){}
 // ---- win check, credits, upgrades
 function nextWave(){wave++;PL=PL.filter(o=>!o.bot);const n=Math.min(1+wave,7),nm=['Rex','Vex','Kilo','Nova','Zed'];

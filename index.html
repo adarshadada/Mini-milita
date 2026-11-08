@@ -27,8 +27,8 @@
 <div class="mmain">
 <div class="panel mcol">
 <div class="tabs"><button id="tSolo" class="on">Solo</button><button id="tOn">Online</button></div>
-<h3>Game mode</h3><div class="tiles" id="gmTiles"></div>
-<h3>Map</h3><div class="tiles maps" id="mpTiles"></div>
+<div id="solTiles"><h3>Game mode</h3><div class="tiles" id="gmTiles"></div>
+<h3>Map</h3><div class="tiles maps" id="mpTiles"></div></div>
 </div>
 <aside class="panel mside">
 <label>Callsign<input id="name" maxlength="12" placeholder="Soldier" autocomplete="off"></label>
@@ -52,7 +52,7 @@
 <dl class="help"><dt>Desktop</dt><dd>A/D move, W or Space jetpack, mouse aim and fire, G grenade, R reload, Q swap gun, E or right-click power, F fullscreen, V mute</dd>
 <dt>Phone</dt><dd>Left stick moves, push up to fly. Right stick aims, push far to fire. Side buttons: grenade, swap, reload, power.</dd></dl>
 </aside></div></div></section>
-<section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Back to menu</button><button id="endUp" class="ghost">Shop</button></div></section>
+<section id="end" hidden><div class="card one"><h1 id="endt"></h1><p id="endsub" class="lead"></p><button id="again">Continue</button><button id="endUp" class="ghost">Shop</button></div></section>
 <section id="upg" hidden><div class="card wide"><div class="uhead"><h1>Shop</h1><div class="credits"><span id="cr">0</span> credits</div></div>
 <p class="note">Earn credits from kills and by finishing matches. Purchases are saved to your account (or to this device if you play as a guest).</p>
 <div class="tabs" id="shopTabs"><button data-t="up" class="on">Upgrades</button><button data-t="gun">Guns</button><button data-t="av">Avatars</button><button data-t="pw">Powers</button></div>
@@ -74,6 +74,19 @@
 <button id="admMk" class="pri">Create code</button>
 <div id="codeBox"></div>
 <button id="admBack" class="ghost">Back</button></div></section>
+<section id="room" hidden><div class="rwrap">
+<header class="rhead"><div class="rtitle"><h1 id="rName">Room</h1><p class="note" id="rSub"></p></div><button id="rLeave" class="ghost">Leave room</button></header>
+<div class="rmain">
+<div class="panel rcol"><h3>Players <span id="rCount"></span></h3><div id="rPlayers"></div>
+<div id="rTeams" class="teamrow"><button id="tBlue" class="tbtn blue">Blue team</button><button id="tRed" class="tbtn red">Red team</button></div></div>
+<div class="panel rset"><h3>Room name</h3><input id="rRename" maxlength="20" autocomplete="off">
+<h3>Mode</h3><div class="tiles" id="rMode"></div>
+<h3>Map</h3><div class="tiles maps" id="rMap"></div>
+<div class="rrow2"><label>Kills to win<select id="rKills"><option>5</option><option>10</option><option selected>15</option><option>25</option><option>50</option></select></label>
+<label>Max players<select id="rMax"><option>2</option><option>4</option><option selected>8</option></select></label></div>
+<div class="rtog"><label class="sw"><input type="checkbox" id="rPow" checked><span class="knob"></span>Powers</label><label class="sw"><input type="checkbox" id="rAir" checked><span class="knob"></span>Ammo airdrops</label></div>
+<p class="note" id="rWait"></p><button id="rStart" class="pri">Start match</button></div>
+</div></div></section>
 <div id="rot">Rotate your phone to landscape</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
