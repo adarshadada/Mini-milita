@@ -40,13 +40,11 @@
 <label>Kills to win<select id="kt"><option>10</option><option selected>15</option><option>25</option></select></label>
 </div>
 <div id="onOpts" hidden>
-<div class="roomhead"><h3>Rooms</h3><button id="qp" class="chip">Quick play</button></div>
+<div class="roomhead"><h3>Rooms (last hour)</h3><button id="rRefresh" class="chip">Refresh</button></div>
 <div id="roomList" class="rooms"></div>
-<button id="mkRoom" class="pri">Create room</button>
-<button id="diagBtn" class="ghost">Check online connection</button>
-<pre id="diag" class="diag" hidden></pre>
-<select id="tm" hidden><option value="0">Blue</option><option value="1">Red</option></select>
-<p class="note">Pick a mode and map on the left, then create a room. Tap Join on any room to play with others. Use the Voice switch in a match to talk (needs a microphone).</p>
+<label>Room code<input id="roomIn" maxlength="12" placeholder="e.g. squad1" autocomplete="off" autocapitalize="none"></label>
+<label>Your team<select id="tm"><option value="0">Blue</option><option value="1">Red</option></select></label>
+<p class="note">Everyone types the same room code, map and mode. Free for all goes to 15 kills, team games to 20. Use the Voice switch in a match to talk.</p>
 </div>
 <button id="play">Deploy</button>
 <p id="msg" role="status"></p>
