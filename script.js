@@ -69,11 +69,11 @@ if(dist<r){const f=1-dist/r,ux=(cx-x)/(dist||1),uy=(cy-y)/(dist||1);hit(q,d*f,by
 pt(x,y,50,'#ff9a2e',12,30);pt(x,y,25,'#555',6,55,-.05);EX.push({x,y,r:0,m:r,l:14});shake(14);if(near({x}))snd(90,.45,'sawtooth',.09,25)}
 function over(){}
 // ---- special powers (rubber-style abilities)
-const PW={jab:{n:'Stretch Jab',cd:70,price:2500,d:'Fire a long stretching punch that hits the first enemy in line.'},
-rocket:{n:'Rubber Rocket',cd:360,price:5000,d:'Launch a giant fist that explodes on impact.'},
-dash:{n:'Elastic Dash',cd:150,price:2000,d:'Snap forward in the direction you aim and dodge hits for a moment.'},
-sling:{n:'Sky Sling',cd:200,price:1500,d:'Spring yourself high into the air.'},
-armor:{n:'Bounce Armor',cd:600,price:3500,d:'Take 70% less damage for 5 seconds.'}};
+const PW={jab:{n:'Stretch Jab',cd:70,price:5000,d:'Fire a long stretching punch that hits the first enemy in line.'},
+rocket:{n:'Rubber Rocket',cd:360,price:10000,d:'Launch a giant fist that explodes on impact.'},
+dash:{n:'Elastic Dash',cd:150,price:4000,d:'Snap forward in the direction you aim and dodge hits for a moment.'},
+sling:{n:'Sky Sling',cd:200,price:3000,d:'Spring yourself high into the air.'},
+armor:{n:'Bounce Armor',cd:600,price:7000,d:'Take 70% less damage for 5 seconds.'}};
 let ARMS=[],FT=[],BN={t:'',l:0};const ft=(x,y,t,c)=>FT.push({x,y,t,c,l:60}),banner=t=>{BN.t=t;BN.l=120};
 function usePower(o){if(!o||o.dead||state!=='play')return;
 if(o===me){if(!o.pw){FT.length=0;ft(o.x+9,o.y-14,'No power equipped. Get one in Shop, then Powers.','#ffb0a0');return}
@@ -115,13 +115,13 @@ if(need){let m=null,md=900;for(const p of PK)if(!p.t&&need(p)){const d=Math.abs(
 if(m){c.mx=Math.sign(m.x-o.x);if(m.y<o.y-20&&o.fuel>8)c.up=1}}}
 function spawnAirdrop(slot){const h=Math.imul(slot+7,2654435761)>>>8,cand=MAP.filter(p=>p[2]>=140),pl=cand[h%cand.length],x=pl[0]+20+((h>>>3)%Math.max(1,pl[2]-64));
 PK.push({x,y:-50,w:24,h:18,vx:0,vy:0,on:0,k:'ammo',t:0,drop:1,ttl:2400,air:1,id:'a'+slot});addKF('Ammo drop incoming')}
-function take(q,p){if(p.k==='ammo'){let need=q.gren<5;for(const w of q.wp){const m=WP[w.k].mag;if(w.ammo<m||w.res<m*3)need=true}if(!need)return 0;
-for(const w of q.wp){const m=WP[w.k].mag;w.ammo=m;w.res=m*3}q.gren=Math.min(5,q.gren+2);q.rl=0;if(q===me)snd(500,.1,'square',.04,900);return 1}
+function take(q,p){if(p.k==='ammo'){let need=q.gren<5;for(const w of q.wp){const m=WP[w.k].mag;if(w.ammo<m||w.res<m*6)need=true}if(!need)return 0;
+for(const w of q.wp){const m=WP[w.k].mag;w.ammo=m;w.res=Math.min(m*6,w.res+m*2)}q.gren=Math.min(5,q.gren+2);q.rl=0;if(q===me)snd(500,.1,'square',.04,900);return 1}
 if(p.k==='med'){if(q.hp>=q.mh)return 0;q.hp=Math.min(q.mh,q.hp+50);return 1}
 if(p.k==='gren'){if(q.gren>=5)return 0;q.gren=Math.min(5,q.gren+2);return 1}
 const h=q.wp.find(w=>w.k===p.k);if(h){h.res+=WP[p.k].mag*2}else if(q.wp.length<2){q.wp.push(gun(p.k));q.cur=1;q.rl=0}else{q.wp[q.cur]=gun(p.k);q.rl=0}
 if(q===me)snd(500,.1,'square',.04,900);return 1}
-function tick(){T++;{const sl=Math.floor(Date.now()/20000);if(sl!==lastSlot){if(lastSlot>=0&&AIRDROP)spawnAirdrop(sl);lastSlot=sl}}if(god&&!canGod()){god=false;$('god').checked=false;$('godSw').hidden=true;addKF('Admin power expired')}
+function tick(){T++;{const sl=Math.floor(Date.now()/12000);if(sl!==lastSlot){if(lastSlot>=0&&AIRDROP)spawnAirdrop(sl);lastSlot=sl}}if(god&&!canGod()){god=false;$('god').checked=false;$('godSw').hidden=true;addKF('Admin power expired')}
 if(god&&me&&!me.dead)me.hp=me.mh;pctl();
 for(const o of PL){if(o.remote){remoteStep(o);continue}if(o.dead){if(!SURV&&--o.rs<=0)spawn(o);continue}if(o.bot)ai(o);upd(o)}
 for(const b of B){for(let s=0;s<3&&b.l>0;s++){b.x+=b.vx/3;b.y+=b.vy/3;if(b.x<0||b.x>WW||b.y>WH||b.y<-100){b.l=0;break}
@@ -484,9 +484,9 @@ $('chipName').textContent=user?user.username:'Guest';$('chipCr').textContent=isA
 const ri=myRank(),xp=UP.xp||0,rc=$('chipRk').getContext('2d');rc.clearRect(0,0,28,28);drawRank(rc,14,14,12,ri);
 $('chipRank').textContent=(ri===99?'Mr God':RANKS[ri].n+', '+xp+' XP')+(tempLeft()>0&&!isAdmin()?', temp admin':'');$('chipRank').style.color=ri===99?'#ffd54a':'';
 let pct=1;if(ri!==99&&RANKS[ri+1]){const a=RANKS[ri].x,b=RANKS[ri+1].x;pct=(xp-a)/(b-a)}$('xpFill').style.width=Math.round(pct*100)+'%'}
-function renderUps(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;$('upgList').innerHTML=UPGS.map(u=>{const l=UP.lv[u.k],c=(l+1)*250;
+function renderUps(){$('cr').textContent=isAdmin()?'Unlimited':UP.cr;$('upgList').innerHTML=UPGS.map(u=>{const l=UP.lv[u.k],c=(l+1)*500;
 return '<div class="uc"><div class="un">'+u.n+'</div><div class="ud">'+u.d+'</div><div class="pips">'+'<i class="on"></i>'.repeat(l)+'<i></i>'.repeat(5-l)+'</div><button data-k="'+u.k+'"'+(l>=5||(!isAdmin()&&UP.cr<c)?' disabled':'')+'>'+(l>=5?'Maxed out':'Upgrade for '+c)+'</button></div>'}).join('');
-$('upgList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const k=b.dataset.k,l=UP.lv[k],c=(l+1)*250;if(l>=5)return;
+$('upgList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{const k=b.dataset.k,l=UP.lv[k],c=(l+1)*500;if(l>=5)return;
 if(user){b.disabled=true;const r=await getSB().rpc('buy_upgrade',{p_key:k});if(r.error){$('umsg').textContent=r.error.message;return}$('umsg').textContent='';setUser(r.data);upLabel();renderUpg()}
 else if(UP.cr>=c){UP.cr-=c;UP.lv[k]++;saveUP();upLabel();renderUpg()}})}
 $('upBtn').onclick=()=>{renderUpg();$('menu').hidden=true;$('end').hidden=true;$('upg').hidden=false};
@@ -494,13 +494,13 @@ $('upBack').onclick=()=>{$('upg').hidden=true;$('menu').hidden=false;upLabel()};
 $('endUp').onclick=()=>{toMenu();$('upBtn').onclick()};
 $('mp').onchange=()=>loadMap($('mp').value);
 // ---- shop: guns and avatars
-const GUNP={ak:1500,shotgun:2000,sniper:3000,rocket:4500};
-const AV=[{id:'recruit',n:'Recruit',p:0,b:'#2f6fe0',h:'#3d4a2e',s:'#f1c27d',a:'helm'},{id:'woodland',n:'Woodland',p:750,b:'#4c6b2f',h:'#3f5a28',s:'#e0b080',a:'camo'},
-{id:'desert',n:'Desert Fox',p:750,b:'#c9a45c',h:'#e6d3a3',s:'#d9a066',a:'turban'},{id:'frost',n:'Frostbite',p:1000,b:'#9fc7e8',h:'#7f9fba',s:'#f1c9b0',a:'fur'},
-{id:'shadow',n:'Shadow',p:1500,b:'#23232b',h:'#16161c',s:'#f1c27d',a:'ninja'},{id:'buccaneer',n:'Buccaneer',p:1750,b:'#7a2b2b',h:'#1a1a1a',s:'#e8b887',a:'pirate'},
-{id:'bolt',n:'Bolt',p:2000,b:'#8a949c',h:'#b5bec6',s:'#8a949c',a:'robot'},{id:'paladin',n:'Paladin',p:2250,b:'#aeb7c0',h:'#c9d1d8',s:'#f1c27d',a:'knight'},
-{id:'cosmonaut',n:'Cosmonaut',p:2500,b:'#e8eef2',h:'#dfe9f0',s:'#f1c27d',a:'astro'},{id:'imp',n:'Imp',p:3000,b:'#7d1f1f',h:'#b02a2a',s:'#d23a3a',a:'demon'},
-{id:'midas',n:'Midas',p:4000,b:'#d4a82a',h:'#f2c93c',s:'#f1c27d',a:'gold'},{id:'monarch',n:'Monarch',p:5000,b:'#5b2a86',h:'#f2c93c',s:'#f1c27d',a:'crown'}];
+const GUNP={ak:3000,shotgun:4000,sniper:6000,rocket:9000};
+const AV=[{id:'recruit',n:'Recruit',p:0,b:'#2f6fe0',h:'#3d4a2e',s:'#f1c27d',a:'helm'},{id:'woodland',n:'Woodland',p:1500,b:'#4c6b2f',h:'#3f5a28',s:'#e0b080',a:'camo'},
+{id:'desert',n:'Desert Fox',p:1500,b:'#c9a45c',h:'#e6d3a3',s:'#d9a066',a:'turban'},{id:'frost',n:'Frostbite',p:2000,b:'#9fc7e8',h:'#7f9fba',s:'#f1c9b0',a:'fur'},
+{id:'shadow',n:'Shadow',p:3000,b:'#23232b',h:'#16161c',s:'#f1c27d',a:'ninja'},{id:'buccaneer',n:'Buccaneer',p:3500,b:'#7a2b2b',h:'#1a1a1a',s:'#e8b887',a:'pirate'},
+{id:'bolt',n:'Bolt',p:4000,b:'#8a949c',h:'#b5bec6',s:'#8a949c',a:'robot'},{id:'paladin',n:'Paladin',p:4500,b:'#aeb7c0',h:'#c9d1d8',s:'#f1c27d',a:'knight'},
+{id:'cosmonaut',n:'Cosmonaut',p:5000,b:'#e8eef2',h:'#dfe9f0',s:'#f1c27d',a:'astro'},{id:'imp',n:'Imp',p:6000,b:'#7d1f1f',h:'#b02a2a',s:'#d23a3a',a:'demon'},
+{id:'midas',n:'Midas',p:8000,b:'#d4a82a',h:'#f2c93c',s:'#f1c27d',a:'gold'},{id:'monarch',n:'Monarch',p:10000,b:'#5b2a86',h:'#f2c93c',s:'#f1c27d',a:'crown'}];
 let INV={guns:[],avatars:['recruit'],powers:[],gun:'',avatar:'recruit',power:''},shopTab='up';
 try{const v=JSON.parse(localStorage.getItem('jm-inv'));if(v)INV=Object.assign(INV,v)}catch(e){}
 const saveINV=()=>{if(user)return;try{localStorage.setItem('jm-inv',JSON.stringify(INV))}catch(e){}};
@@ -580,6 +580,7 @@ if(gTab==='cr')h=[100,500,1000,5000,10000,50000].map(n=>chip(n.toLocaleString()+
 else if(gTab==='gun')h=Object.keys(GUNP).map(k=>chip(WP[k].n,'gun:'+k)).join('');
 else if(gTab==='av')h=AV.filter(a=>a.p>0).map(a=>chip(a.n,'av:'+a.id)).join('');
 else if(gTab==='up')h=UPGS.map(u=>chip(u.n+' +1 level','up:'+u.k)).join('');
+else if(gTab==='ban')h=[[10,'Soft ban 10 min'],[60,'Soft ban 1 hour'],[1440,'Soft ban 24 hours'],[0,'Permanent ban'],[-1,'Unban']].map(x=>chip(x[1],'ban:'+x[0])).join('');
 else h=[1,2,5,10,30].map(n=>chip(n+(n===1?' minute':' minutes'),'ta:'+n)).join('')+chip('Revoke now','rv:0');
 b.innerHTML=h;b.querySelectorAll('.gc').forEach(x=>x.onclick=()=>giveGift(x.dataset.a))}
 async function giveGift(a){const m=t=>$('admMsg').textContent=t;if(!admTarget){m('Pick a player first.');return}
@@ -588,6 +589,7 @@ if(k==='cr')r=await sc.rpc('admin_transfer',{p_email:admTarget,p_amount:+v});
 else if(k==='gun')r=await sc.rpc('gift_item',{p_target:admTarget,p_kind:'guns',p_id:v});
 else if(k==='av')r=await sc.rpc('gift_item',{p_target:admTarget,p_kind:'avatars',p_id:v});
 else if(k==='up')r=await sc.rpc('gift_upgrade',{p_target:admTarget,p_key:v,p_levels:1});
+else if(k==='ban'){if(+v<0)r=await sc.rpc('admin_unban',{p_target:admTarget});else r=await sc.rpc('admin_ban',{p_target:admTarget,p_minutes:+v===0?null:+v})}
 else if(k==='ta')r=await sc.rpc('gift_admin',{p_target:admTarget,p_minutes:+v});
 else r=await sc.rpc('revoke_admin',{p_target:admTarget});
 m(r.error?r.error.message:'Sent to '+$('admSel').textContent+'.');loadPlayers()}
