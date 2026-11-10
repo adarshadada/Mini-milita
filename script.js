@@ -463,15 +463,15 @@ function nextWave(){wave++;PL=PL.filter(o=>!o.bot);const n=Math.min(1+wave,7),nm
 for(let i=0;i<n;i++){const b=mk(nm[i%5]+(wave>1?' '+wave:''),1,TC[1]);Object.assign(b,{team:1,mh:100+8*wave,lo:['ak','shotgun','ak','sniper','rocket'][(i+wave)%5],av:(i*3+wave)%AV.length,pw:['jab','rocket','','armor','jab'][(i+wave)%5]});PL.push(b);spawn(b)}
 if(wave>1){me.hp=Math.min(me.mh,me.hp+40);me.gren=Math.min(5,me.gren+1)}addKF('Wave '+wave);banner('Wave '+wave)}
 function checkWin(){if(state!=='play')return;
-if(SURV){if(me.dead){state='over';const cr=me.kills*10+wave*20;award(cr,me.kills,wave>=5);$('endt').textContent='Game over';
-$('endsub').textContent='You reached wave '+wave+' with '+me.kills+' kills. You earned '+cr+' credits and '+(me.kills*10+(wave>=5?60:20))+' XP.';$('end').hidden=false}
+if(SURV){if(me.dead){state='over';const cr=me.kills*40+wave*60;award(cr,me.kills,wave>=5);$('endt').textContent='Game over';
+$('endsub').textContent='You reached wave '+wave+' with '+me.kills+' kills. You earned '+cr+' credits and '+(me.kills*15+(wave>=5?80:30))+' XP.';$('end').hidden=false}
 else if(!PL.some(o=>o.bot&&!o.dead))nextWave();return}
 let w=null,tw=-1;
 if(TEAMS){const t=[0,0];for(const o of PL)if(o.team>=0)t[o.team]+=o.kills;tw=t[0]>=TARGET?0:t[1]>=TARGET?1:-1;if(tw<0)return}
 else{w=PL.find(o=>o.kills>=TARGET);if(!w)return}
-state='over';const won=TEAMS?me.team===tw:w===me,cr=me.kills*10+(won?50:15);award(cr,me.kills,won);
+state='over';if(online)warReport();const won=TEAMS?me.team===tw:w===me,cr=me.kills*40+(won?200:60);award(cr,me.kills,won);
 $('endt').textContent=TEAMS?TN[tw]+' team wins':(won?'Victory':w.name+' wins');
-$('endsub').textContent=(won?'Victory. ':'Defeat. ')+'Your kills/deaths: '+me.kills+'/'+me.deaths+'. You earned '+cr+' credits and '+(me.kills*10+(won?60:20))+' XP.';$('end').hidden=false}
+$('endsub').textContent=(won?'Victory. ':'Defeat. ')+'Your kills/deaths: '+me.kills+'/'+me.deaths+'. You earned '+cr+' credits and '+(me.kills*15+(won?80:30))+' XP.';$('end').hidden=false}
 const UPGS=[{k:'hp',n:'Body armor',d:'+15 max health per level'},{k:'fuel',n:'Jetpack tank',d:'+15 max fuel per level'},{k:'spd',n:'Combat boots',d:'+6% move speed per level'},
 {k:'dmg',n:'Gunnery',d:'+6% weapon damage per level'},{k:'rl',n:'Quick hands',d:'10% faster reload per level'},{k:'gren',n:'Grenade bag',d:'+1 starting grenade per level'}];
 let UP={cr:100,xp:0,lv:{hp:0,fuel:0,spd:0,dmg:0,rl:0,gren:0}};
@@ -524,7 +524,7 @@ function avPreview(cn,av){const c=cn.getContext('2d');c.clearRect(0,0,cn.width,c
 c.strokeStyle='#222';c.lineWidth=4;c.beginPath();c.moveTo(-3,24);c.lineTo(-3,34);c.moveTo(3,24);c.lineTo(3,34);c.stroke();c.fillStyle='#555';c.fillRect(-13,8,6,15);c.fillStyle=av.b;c.fillRect(-7,8,14,17);headGfx(c,av,1);c.restore()}
 function renderUpg(){shopTab==='gun'?renderGuns():shopTab==='av'?renderAvs():shopTab==='pw'?renderPows():renderUps()}
 async function shopBuy(kind,id,price){const m=t=>$('umsg').textContent=t;
-if(user){const r=await getSB().rpc('buy_item',{p_kind:kind,p_id:id});if(r.error){m(r.error.message);return}setUser(r.data)}
+if(user){const r=await getSB().rpc('buy_item',{p_kind:kind,p_id:id});if(r.error){m(r.error.message==='Unknown item'?'Unknown item: the database price list is out of date. Run fix-powers.sql in Supabase.':r.error.message);return}setUser(r.data)}
 else{if(UP.cr<price){m('Not enough credits.');return}UP.cr-=price;INV[kind].push(id);saveUP();saveINV()}
 m('');upLabel();renderUpg()}
 async function shopEquip(kind,id){if(user){const r=await getSB().rpc('equip_item',{p_kind:kind,p_id:id});if(r.error){$('umsg').textContent=r.error.message;return}setUser(r.data)}
@@ -550,14 +550,14 @@ function isAdmin(){return !!(user&&user.is_admin&&String(user.email||'').toLower
 function tempLeft(){return user&&user.admin_until?Math.max(0,(new Date(user.admin_until)-Date.now())/1000):0}
 function canGod(){return isAdmin()||tempLeft()>0}
 function setUser(p){user=p;INV=Object.assign({guns:[],avatars:['recruit'],powers:[],gun:'',avatar:'recruit',power:''},p.inventory||{});UP.lv=Object.assign({hp:0,fuel:0,spd:0,dmg:0,rl:0,gren:0},p.upgrades);UP.cr=+p.credits;UP.xp=+p.xp||0}
-function award(cr,k,won){const xg=k*10+(won?60:20),before=rankIdx(UP.xp||0);
+function award(cr,k,won){const xg=k*15+(won?80:30),before=rankIdx(UP.xp||0);
 if(user){if(!isAdmin())getSB().rpc('claim_match',{p_kills:k,p_won:won}).then(r=>{if(r.data){setUser(r.data);upLabel();const a=rankIdx(UP.xp);if(a>before)$('endsub').textContent+=' Rank up: '+RANKS[a].n+'!'}})}
 else{UP.cr+=cr;UP.xp=(UP.xp||0)+xg;saveUP();const a=rankIdx(UP.xp);if(a>before)setTimeout(()=>{$('endsub').textContent+=' Rank up: '+RANKS[a].n+'!'},0)}upLabel()}
 async function loadProfile(session){const r=await getSB().from('profiles').select('*').eq('id',session.user.id).maybeSingle();
 if(r.error||!r.data){$('amsg').textContent='Profile not found. Run supabase.sql in your Supabase project first.';return false}setUser(r.data);return true}
 function showMenu(){$('auth').hidden=true;$('menu').hidden=false;
 $('who').textContent=user?(user.is_admin?'Admin account':'Signed in'):'Progress saves on this device only';
-$('admBtn').hidden=!isAdmin();$('outBtn').textContent=user?'Sign out':'Sign in';$('name').readOnly=!!user;if(user)$('name').value=user.username;upLabel();joinPending()}
+$('admBtn').hidden=!isAdmin();$('outBtn').textContent=user?'Sign out':'Sign in';$('name').readOnly=!!user;if(user)$('name').value=user.username;upLabel();joinPending();checkDaily()}
 async function doAuth(signup){const sc=getSB(),am=t=>$('amsg').textContent=t;if(!sc){am('Signing in needs an internet connection.');return}
 const raw=$('aemail').value.trim(),isMail=raw.includes('@'),name=isMail?'':raw.replace(/[^A-Za-z0-9_]/g,'').slice(0,12),pw=$('apass').value;
 if(!isMail&&name.length<3){am('A username needs 3 to 12 letters, numbers or underscores.');return}
@@ -609,11 +609,11 @@ async function loadRooms(){const box=$('roomList');if(!box)return;
  if(!user){box.innerHTML='<div class="room empty">Sign in to see rooms.</div>';return}
  box.innerHTML='<div class="room empty">Loading rooms...</div>';
  const since=new Date(Date.now()-60*60000).toISOString();
- let r;try{r=await getSB().from('rooms').select('code,mode,map,kills,host_name,last_active').gte('last_active',since).order('last_active',{ascending:false})}catch(e){box.innerHTML='<div class="room empty">Could not load rooms.</div>';return}
+ let r;try{r=await getSB().from('rooms').select('code,mode,map,kills,host_name,last_active,team_size').gte('last_active',since).order('last_active',{ascending:false})}catch(e){box.innerHTML='<div class="room empty">Could not load rooms.</div>';return}
  if(r.error){box.innerHTML='<div class="room empty">'+esc(r.error.message)+'</div>';return}
- const rows=r.data||[];
+ const rows=(r.data||[]).slice(0,4);
  box.innerHTML=rows.length?rows.map(x=>{const mins=Math.max(0,Math.round((Date.now()-new Date(x.last_active))/60000));
-  return '<div class="room"><div class="ri"><b>'+esc(x.code)+'</b><span>'+esc((MAPS.find(m=>m.id===x.map)||MAPS[0]).n)+' / '+(x.mode==='tdm'?'Team deathmatch':'Free for all')+' / to '+x.kills+' / host '+esc(x.host_name)+' / active '+(mins<1?'just now':mins+' min ago')+'</span></div><button class="chip" data-code="'+esc(x.code)+'">Join</button></div>'}).join('')
+  return '<div class="room"><div class="ri"><b>'+esc(x.code)+'</b><span>'+esc((MAPS.find(m=>m.id===x.map)||MAPS[0]).n)+' / '+(x.mode==='tdm'?'Team deathmatch':'Free for all')+' / '+esc(TEAM_SIZES[x.team_size]||'')+' / to '+x.kills+' / host '+esc(x.host_name)+' / active '+(mins<1?'just now':mins+' min ago')+'</span></div><button class="chip" data-code="'+esc(x.code)+'">Join</button></div>'}).join('')
   :'<div class="room empty">No rooms in the last hour. Type a code to create one.</div>';
  box.querySelectorAll('button[data-code]').forEach(btn=>btn.onclick=()=>{$('roomIn').value=btn.dataset.code;enterFS();startOnline()})}
 function startOnline(){const msg=$('msg');
@@ -624,19 +624,86 @@ function startOnline(){const msg=$('msg');
  if(code.length<2){msg.textContent='Type a room code (2 to 12 letters or numbers).';return}
  const sc=getSB(),mode=$('gm').value,map=$('mp').value;
  msg.textContent='Opening room '+code+'...';$('play').disabled=true;
- sc.rpc('open_room',{p_code:code,p_mode:mode,p_map:map,p_kills:mode==='tdm'?20:15}).then(r=>{
+ sc.rpc('open_room',{p_code:code,p_mode:mode,p_map:map,p_kills:mode==='tdm'?20:15,p_team:+$('teamSize').value}).then(r=>{
   if(r.error){$('play').disabled=false;msg.textContent=r.error.message;return}
   const row=r.data;$('gm').value=row.mode;$('mp').value=row.map;syncTiles();
   const cfg={mode:row.mode,map:row.map,kills:row.kills,powers:true,airdrop:true};
-  const c2=sc.channel('jm-'+row.code+'-'+row.mode+'-'+row.map,{config:{broadcast:{self:false}}});
-  c2.on('broadcast',{event:'e'},m=>onMsg(m.payload));
-  subscribeWithTimeout(c2,10000).then(st=>{
-   if(st==='SUBSCRIBED'){ch=c2;online=true;roomCode=row.code;msg.textContent='';
+  const c2=sc.channel('jm-'+row.code+'-'+row.mode+'-'+row.map,{config:{broadcast:{self:false},presence:{key:myId}}});
+  c2.on('broadcast',{event:'e'},m=>onMsg(m.payload));c2.on('presence',{event:'sync'},()=>{});
+  subscribeWithTimeout(c2,10000).then(async st=>{
+   if(st==='SUBSCRIBED'){
+    const cap=(row.team_size||4)*2;try{await c2.track({k:myId,t:Date.now()})}catch(e){}
+    await new Promise(res=>setTimeout(res,1200));
+    const list=Object.values(c2.presenceState()).map(v=>v[0]).filter(Boolean).sort((a,b)=>a.t-b.t);
+    if(list.findIndex(x=>x.k===myId)>=cap){try{sc.removeChannel(c2)}catch(e){};msg.textContent='This room is full. '+(TEAM_SIZES[row.team_size]||'Squad')+' rooms hold '+cap+' players.';$('play').disabled=false;return}
+    ch=c2;online=true;roomCode=row.code;msg.textContent='';
     if(touchTimer)clearInterval(touchTimer);touchTimer=setInterval(()=>{try{sc.rpc('touch_room',{p_code:row.code})}catch(e){}},5*60000);
     beginMatch(true,cfg,+$('tm').value||0)}
    else{try{sc.removeChannel(c2)}catch(e){};msg.textContent=st==='TIMEOUT'?'The server did not answer. Check your connection and try again.':'Could not join'+(lastSubErr?' ('+lastSubErr+')':'')+'.'}
    $('play').disabled=false})}).catch(()=>{$('play').disabled=false;msg.textContent='Could not open the room. Check your connection.'})}
 $('rRefresh').onclick=loadRooms;
+// ---- clans, teams and clan wars
+const TEAM_SIZES={2:'Duo (2)',4:'Squad (4)',8:'Unit (8)'};
+let CL={clan:null,role:'',members:[],names:{},wars:[],clans:[]};
+const clanMsg=t=>{$('clanMsg').textContent=t};
+function openClan(){if(!user){setMsg('Sign in with an account to use clans.');return}$('menu').hidden=true;$('clan').hidden=false;loadClan()}
+let chatTimer=null;
+function closeClan(){$('clan').hidden=true;$('menu').hidden=false;if(chatTimer){clearInterval(chatTimer);chatTimer=null}}
+async function loadChat(){if(!CL.clan)return;const r=await getSB().from('clan_messages').select('id,user_id,body,created_at').eq('clan_id',CL.clan.id);
+ const rows=(r.data||[]).sort((a,b)=>a.id-b.id).slice(-30);const box=$('chatBox');if(!box)return;
+ box.innerHTML=rows.map(m=>{const p=CL.names[m.user_id]||{username:'Player'};return '<div class="msg"><b>'+esc(p.username)+'</b> '+esc(m.body)+'</div>'}).join('')||'<p class="note">No messages yet.</p>';box.scrollTop=1e9}
+async function loadClan(){const sc=getSB(),body=$('clanBody');clanMsg('');body.innerHTML='<p class="note">Loading...</p>';
+ try{
+  const mr=await sc.from('clan_members').select('clan_id,role').eq('user_id',user.id).maybeSingle();
+  const nm=await sc.from('player_names').select('id,username,xp');
+  const cl=await sc.from('clans').select('id,name,tag,owner_id,invite_code,wins');
+  CL.names={};(nm.data||[]).forEach(p=>CL.names[p.id]=p);CL.clans=cl.data||[];
+  if(mr.error){body.innerHTML='<p class="note">'+esc(mr.error.message)+'</p>';return}
+  if(!mr.data){CL.clan=null;return renderNoClan()}
+  const mem=await sc.from('clan_members').select('clan_id,user_id,role');
+  const wr=await sc.from('clan_wars').select('*');
+  CL.clan=CL.clans.find(c=>c.id===mr.data.clan_id)||null;CL.role=mr.data.role;
+  CL.members=(mem.data||[]).filter(m=>m.clan_id===mr.data.clan_id);
+  CL.wars=(wr.data||[]).filter(w=>(w.clan_a===mr.data.clan_id||w.clan_b===mr.data.clan_id)&&new Date(w.ends_at)>Date.now());
+  renderClanMain();loadChat();if(!chatTimer)chatTimer=setInterval(()=>{if(!$('clan').hidden&&CL.clan)loadChat()},5000)}
+ catch(e){body.innerHTML='<p class="note">Could not load clans. Check your connection.</p>'}}
+function renderNoClan(){$('clanBody').innerHTML='<div class="clancols"><div class="panel2"><h3>Create a clan</h3><input id="ncName" maxlength="20" placeholder="Clan name"><input id="ncTag" maxlength="4" placeholder="Tag (2 to 4 letters)"><button data-act="create" class="pri">Create clan</button></div><div class="panel2"><h3>Join a clan</h3><input id="jcCode" maxlength="12" placeholder="Invite code"><button data-act="join" class="pri">Join clan</button><p class="note">Ask a clan member for their invite code.</p></div></div>'}
+function renderClanMain(){const body=$('clanBody');if(!CL.clan)return renderNoClan();
+ const lead=CL.role==='owner'||CL.role==='officer';
+ const roster=CL.members.map(m=>{const p=CL.names[m.user_id]||{username:'Player',xp:0},isMe=m.user_id===user.id;let acts='';
+  if(lead&&!isMe&&m.role!=='owner'&&(CL.role==='owner'||m.role==='member'))acts+='<button data-act="kick" data-u="'+m.user_id+'" class="mini">Kick</button>';
+  if(CL.role==='owner'&&!isMe&&m.role!=='owner')acts+=m.role==='member'?'<button data-act="role" data-u="'+m.user_id+'" data-r="officer" class="mini">Promote</button>':'<button data-act="role" data-u="'+m.user_id+'" data-r="member" class="mini">Demote</button>';
+  return '<div class="row"><span>'+esc(p.username)+(isMe?' (you)':'')+'</span><span class="tag '+m.role+'">'+m.role+'</span>'+acts+'</div>'}).join('');
+ const w=CL.wars[0];let warHtml='<p class="note">No active war. Officers can declare one.</p>';
+ if(w){const mineA=w.clan_a===CL.clan.id,mine=mineA?w.score_a:w.score_b,theirs=mineA?w.score_b:w.score_a,oid=mineA?w.clan_b:w.clan_a,other=CL.clans.find(c=>c.id===oid);
+  warHtml='<div class="war"><div class="wscore"><b>'+esc(CL.clan.tag)+' '+mine+'</b><span>vs</span><b>'+theirs+' '+esc(other?other.tag:'?')+'</b></div><p class="note">'+esc(TEAM_SIZES[w.team_size]||'')+' / first to '+w.target+' / ends '+new Date(w.ends_at).toLocaleString()+'</p><p class="note">Room code <b class="code">'+esc(w.code)+'</b>. Everyone types it in Online with the same mode and map.</p></div>'}
+ const decl=lead?'<h3>Declare war</h3><div class="row2"><select id="warTo">'+CL.clans.filter(c=>c.id!==CL.clan.id).map(c=>'<option value="'+esc(c.tag)+'">['+esc(c.tag)+'] '+esc(c.name)+'</option>').join('')+'</select><select id="warSize">'+[2,4,8].map(k=>'<option value="'+k+'"'+(k===4?' selected':'')+'>'+TEAM_SIZES[k]+'</option>').join('')+'</select></div><button data-act="war" class="pri">Declare war</button>':'';
+ body.innerHTML='<div class="clancols clan3"><div class="panel2"><div class="cname"><b>['+esc(CL.clan.tag)+'] '+esc(CL.clan.name)+'</b><span class="tag '+CL.role+'">'+CL.role+'</span><span class="tag">'+(CL.clan.wins||0)+' wins</span></div><p class="note">Invite code <b class="code">'+esc(CL.clan.invite_code)+'</b></p><div class="roster">'+roster+'</div><button data-act="leave" class="ghost">Leave clan</button></div><div class="panel2"><h3>Clan war</h3>'+warHtml+decl+'</div><div class="panel2 chat"><h3>Clan chat</h3><div id="chatBox" class="chatbox"></div><div class="row2 chatin"><input id="chatIn" maxlength="200" placeholder="Message your clan"><button data-act="say" class="mini">Send</button></div></div></div>'}
+$('clanBody').onclick=async e=>{const b=e.target.closest('button[data-act]');if(!b)return;const a=b.dataset.act,sc=getSB();
+ let r=null;
+ if(a==='create')r=await sc.rpc('create_clan',{p_name:$('ncName').value.trim(),p_tag:$('ncTag').value.trim().toUpperCase()});
+ else if(a==='join')r=await sc.rpc('join_clan',{p_invite:$('jcCode').value.trim().toLowerCase()});
+ else if(a==='leave')r=await sc.rpc('leave_clan');
+ else if(a==='role')r=await sc.rpc('set_clan_role',{p_user:b.dataset.u,p_role:b.dataset.r});
+ else if(a==='kick')r=await sc.rpc('clan_kick',{p_user:b.dataset.u});
+ else if(a==='say'){r=await sc.rpc('clan_say',{p_body:$('chatIn').value.trim()});if(!r.error){$('chatIn').value='';loadChat();return}}
+ else if(a==='war')r=await sc.rpc('declare_war',{p_target_tag:$('warTo').value,p_team_size:+$('warSize').value});
+ if(r&&r.error){clanMsg(r.error.message);return}
+ let note='';if(a==='war'&&r&&r.data)note='War declared. Room code: '+r.data.code;else if(a==='create')note='Clan created.';else if(a==='join')note='Joined the clan.';
+ await loadClan();if(note)clanMsg(note)};
+function warReport(){if(!user||!roomCode)return;try{getSB().rpc('war_report',{p_code:roomCode,p_kills:me?me.kills:0}).catch(()=>{})}catch(e){}}
+$('clanBtn').onclick=openClan;$('clanBack').onclick=closeClan;
+// ---- daily rewards
+function dayReward(d){return 200+100*(d-1)+(d===7?500:0)}
+async function openDaily(){if(!user){setMsg('Sign in to claim daily rewards.');return}$('menu').hidden=true;$('daily').hidden=false;renderDaily()}
+async function renderDaily(){const r=await getSB().rpc('daily_status');if(r.error){$('dailyNote').textContent=r.error.message;return}
+ const st=r.data||{claimed:false,streak:0},cur=st.streak>0?((st.streak-1)%7)+1:0,next=st.claimed?0:(cur%7)+1;
+ $('dayRow').innerHTML=[1,2,3,4,5,6,7].map(d=>'<div class="dday'+(d===(st.claimed?cur:next)?' today':'')+(st.claimed?(d<=cur?' done':''):(d<next?' done':''))+'"><b>Day '+d+'</b><span>'+dayReward(d)+' cr</span>'+(d===7?'<i>+500 bonus</i>':'')+'</div>').join('');
+ $('dailyNote').textContent=st.claimed?'Claimed today. Streak: '+st.streak+' day(s). Come back tomorrow.':'Streak: '+st.streak+' day(s). Claim today to keep it going.';
+ $('dailyClaim').disabled=!!st.claimed}
+$('dailyClaim').onclick=async()=>{const r=await getSB().rpc('claim_daily');if(r.error){$('dailyNote').textContent=r.error.message;return}const d=r.data;$('dailyNote').textContent='Claimed '+d.reward+' credits. Day '+d.day+' of 7, streak '+d.streak+'.';await refreshProfile();renderDaily();checkDaily()};
+$('dailyBtn').onclick=openDaily;$('dailyBack').onclick=()=>{$('daily').hidden=true;$('menu').hidden=false};
+async function checkDaily(){if(!user||!getSB())return;try{const r=await getSB().rpc('daily_status');$('dailyBtn').textContent=r.data&&!r.data.claimed?'Daily reward!':'Daily';$('dailyBtn').classList.toggle('glow',!!(r.data&&!r.data.claimed))}catch(e){}}
 // ---- connection check (shows exactly which step fails)
 async function runDiag(){const out=[],log=t=>{out.push(t);$('diag').textContent=out.join('\n')};$('diag').hidden=false;
  log('1. Page loaded from: '+location.href.split('#')[0]);
